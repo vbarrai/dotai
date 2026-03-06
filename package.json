@@ -26,6 +26,20 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"
   },
+  "author": "Vincent Barrault <vincentb45@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbarrai/dotai.git"
+  },
+  "keywords": [
+    "claude-code",
+    "cursor",
+    "codex",
+    "skills",
+    "ai",
+    "cli"
+  ],
   "engines": {
     "node": ">=18"
   },
