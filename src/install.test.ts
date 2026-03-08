@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { setupScenario, skillFile } from './test-utils.ts';
+import { uninstallSkill, listInstalledSkills } from './installer.ts';
 
 describe('install', () => {
   const { init, cleanup, givenSkill, when, then, thenExists, getTargetDir } = setupScenario();
@@ -127,6 +128,60 @@ describe('install', () => {
           expect(await thenExists(`${agent}/skills/${skill}/SKILL.md`)).toBe(true);
         }
       }
+    });
+  });
+
+  describe('uninstall', () => {
+    it('removes a skill from an agent', async () => {
+      await givenSkill('to-remove');
+      await when({ skills: ['to-remove'], agents: ['claude-code'] });
+
+      expect(await thenExists('.claude/skills/to-remove/SKILL.md')).toBe(true);
+
+      await uninstallSkill('to-remove', 'claude-code', { global: false, cwd: getTargetDir() });
+
+      expect(await thenExists('.claude/skills/to-remove/SKILL.md')).toBe(false);
+    });
+
+    it('removes the canonical directory', async () => {
+      await givenSkill('canonical-check');
+      await when({ skills: ['canonical-check'], agents: ['claude-code'] });
+
+      expect(await thenExists('.agents/skills/canonical-check/SKILL.md')).toBe(true);
+
+      await uninstallSkill('canonical-check', 'claude-code', { global: false, cwd: getTargetDir() });
+
+      expect(await thenExists('.agents/skills/canonical-check')).toBe(false);
+    });
+
+    it('removes from one agent and also removes the canonical dir', async () => {
+      await givenSkill('shared');
+      await when({ skills: ['shared'], agents: ['claude-code', 'cursor'] });
+
+      await uninstallSkill('shared', 'claude-code', { global: false, cwd: getTargetDir() });
+
+      expect(await thenExists('.claude/skills/shared/SKILL.md')).toBe(false);
+      // canonical dir is also removed, so cursor's symlink becomes dangling
+      expect(await thenExists('.agents/skills/shared')).toBe(false);
+    });
+
+    it('does not error when uninstalling a non-existent skill', async () => {
+      const result = await uninstallSkill('ghost', 'claude-code', { global: false, cwd: getTargetDir() });
+
+      expect(result).toBe(true);
+    });
+
+    it('skill no longer appears in listInstalledSkills after uninstall', async () => {
+      await givenSkill('listed');
+      await when({ skills: ['listed'], agents: ['claude-code'] });
+
+      const before = await listInstalledSkills({ global: false, cwd: getTargetDir() });
+      expect(before.find((s) => s.name === 'listed')).toBeDefined();
+
+      await uninstallSkill('listed', 'claude-code', { global: false, cwd: getTargetDir() });
+
+      const after = await listInstalledSkills({ global: false, cwd: getTargetDir() });
+      expect(after.find((s) => s.name === 'listed')).toBeUndefined();
     });
   });
 });
