@@ -72,6 +72,52 @@ describe('install', () => {
       expect(alphaContent).toContain('alpha');
       expect(betaContent).toContain('beta');
     });
+
+    it('removes previously installed skills not in --skills', async () => {
+      await givenSkill('keep', 'drop');
+
+      // First install both
+      await when({ agents: ['claude-code'] });
+      expect(await thenExists('.claude/skills/keep/SKILL.md')).toBe(true);
+      expect(await thenExists('.claude/skills/drop/SKILL.md')).toBe(true);
+
+      // Re-install with only 'keep' — 'drop' should be removed
+      await when({ skills: ['keep'], agents: ['claude-code'] });
+
+      expect(await thenExists('.claude/skills/keep/SKILL.md')).toBe(true);
+      expect(await thenExists('.claude/skills/drop/SKILL.md')).toBe(false);
+    });
+
+    it('removes all skills when --skills lists none of the installed', async () => {
+      await givenSkill('old-a', 'old-b', 'new-c');
+
+      await when({ skills: ['old-a', 'old-b'], agents: ['claude-code'] });
+      expect(await thenExists('.claude/skills/old-a/SKILL.md')).toBe(true);
+      expect(await thenExists('.claude/skills/old-b/SKILL.md')).toBe(true);
+
+      // Re-install with only 'new-c' — old skills should be removed
+      await when({ skills: ['new-c'], agents: ['claude-code'] });
+
+      expect(await thenExists('.claude/skills/new-c/SKILL.md')).toBe(true);
+      expect(await thenExists('.claude/skills/old-a/SKILL.md')).toBe(false);
+      expect(await thenExists('.claude/skills/old-b/SKILL.md')).toBe(false);
+    });
+
+    it('removes skills across all agents when --skills changes', async () => {
+      await givenSkill('stays', 'goes');
+
+      await when({ agents: ['claude-code', 'cursor'] });
+      expect(await thenExists('.claude/skills/goes/SKILL.md')).toBe(true);
+      expect(await thenExists('.cursor/skills/goes/SKILL.md')).toBe(true);
+
+      // Re-install with only 'stays'
+      await when({ skills: ['stays'], agents: ['claude-code', 'cursor'] });
+
+      expect(await thenExists('.claude/skills/stays/SKILL.md')).toBe(true);
+      expect(await thenExists('.cursor/skills/stays/SKILL.md')).toBe(true);
+      expect(await thenExists('.claude/skills/goes/SKILL.md')).toBe(false);
+      expect(await thenExists('.cursor/skills/goes/SKILL.md')).toBe(false);
+    });
   });
 
   describe('--agents filter', () => {
