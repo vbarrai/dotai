@@ -19,9 +19,23 @@ function isLocalPath(input: string): boolean {
 }
 
 /**
+ * Extract a #branch suffix from the input string.
+ * Returns [cleanInput, ref] — ref is undefined if no # found.
+ */
+function extractBranchFragment(input: string): [string, string | undefined] {
+  // Only apply to non-URL inputs (shorthand like owner/repo#branch)
+  if (input.includes('://')) return [input, undefined]
+  const hashIdx = input.indexOf('#')
+  if (hashIdx === -1) return [input, undefined]
+  const ref = input.slice(hashIdx + 1)
+  return [input.slice(0, hashIdx), ref || undefined]
+}
+
+/**
  * Parse a source string. Supports:
  * - Local paths: ./path, ../path, /absolute
  * - GitHub shorthand: owner/repo
+ * - GitHub shorthand with branch: owner/repo#branch
  * - GitHub URLs: https://github.com/owner/repo
  * - GitHub tree URLs: https://github.com/owner/repo/tree/branch/path
  */
@@ -52,11 +66,12 @@ export function parseSource(input: string): ParsedSource {
     return { type: 'github', url: `https://github.com/${owner}/${cleanRepo}.git` };
   }
 
-  // GitHub shorthand: owner/repo or owner/repo/subpath
-  const shorthand = input.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/);
-  if (shorthand && !input.includes(':')) {
+  // GitHub shorthand: owner/repo#branch or owner/repo/subpath
+  const [cleanInput, fragmentRef] = extractBranchFragment(input)
+  const shorthand = cleanInput.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/);
+  if (shorthand && !cleanInput.includes(':')) {
     const [, owner, repo, subpath] = shorthand;
-    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, subpath };
+    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, subpath, ref: fragmentRef };
   }
 
   // Fallback: treat as github

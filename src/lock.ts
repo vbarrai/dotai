@@ -9,6 +9,7 @@ export interface SkillLockEntry {
   source: string;
   sourceUrl: string;
   skillPath?: string;
+  ref?: string;
   skillFolderHash: string;
   installedAt: string;
   updatedAt: string;
@@ -78,14 +79,17 @@ export function getGitHubToken(): string | null {
 export async function fetchSkillFolderHash(
   ownerRepo: string,
   skillPath: string,
-  token?: string | null
+  token?: string | null,
+  ref?: string | null
 ): Promise<string | null> {
   let folderPath = skillPath.replace(/\\/g, '/');
   if (folderPath.endsWith('/SKILL.md')) folderPath = folderPath.slice(0, -9);
   else if (folderPath.endsWith('SKILL.md')) folderPath = folderPath.slice(0, -8);
   if (folderPath.endsWith('/')) folderPath = folderPath.slice(0, -1);
 
-  for (const branch of ['main', 'master']) {
+  const branches = ref ? [ref] : ['main', 'master'];
+
+  for (const branch of branches) {
     try {
       const url = `https://api.github.com/repos/${ownerRepo}/git/trees/${branch}?recursive=1`;
       const headers: Record<string, string> = {
