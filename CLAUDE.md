@@ -63,23 +63,19 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 
 ## Knowledge base — Agent configuration reference
 
-All agent-specific documentation lives in `docs/skills-authoring/`. Use these docs as the source of truth when implementing support for each agent.
+All agent-specific documentation lives in `docs/agents-config/`. Use these docs as the source of truth when implementing support for each agent.
 
-### Index
+### Structure
 
-- `docs/skills-authoring/README.md` — Overview, comparison tables, feature matrix across all agents
-- `docs/skills-authoring/standard/agent-skills-spec.md` — Agent Skills open standard (SKILL.md format, progressive disclosure)
-- `docs/skills-authoring/standard/agents-md.md` — AGENTS.md cross-tool instruction file (replaces/complements CLAUDE.md)
+Files follow the pattern `docs/agents-config/[agent-name]/[feature-name].md`. Each file includes a maconfai support status banner.
 
-### Per-agent guides
-
-| Agent | Guide | Key topics |
-|:------|:------|:-----------|
-| **Claude Code** | `docs/skills-authoring/claude-code/` | CLAUDE.md, skills, hooks (17 events), MCP (.mcp.json), sub-agents, settings.json |
-| **Cursor** | `docs/skills-authoring/cursor/` | Rules (.mdc), skills, hooks (.cursor/hooks.json), MCP, AGENTS.md support |
-| **Codex (OpenAI)** | `docs/skills-authoring/codex/README.md` | AGENTS.md, config.toml (full ref), agents/openai.yaml, sandbox (3 modes), multi-agent, [features] flags, MCP, profiles |
-| **Gemini CLI (Google)** | `docs/skills-authoring/gemini-cli/README.md` | GEMINI.md, settings.json (full ref), skills, MCP (stdio/SSE/HTTP), custom commands (TOML), extensions, sandbox (Docker/Podman) |
-| **Amp Code (Sourcegraph)** | `docs/skills-authoring/amp-code/README.md` | AGENTS.md, skills, MCP, toolboxes, sub-agents (Task), oracle |
+| Agent | skills | hooks | mcp | context | Other |
+|:------|:-------|:------|:----|:--------|:------|
+| **Claude Code** | Supported | Not supported | Not supported | Not supported | `sub-agents.md` |
+| **Cursor** | Supported | Not supported | Not supported | Not supported | `rules.md` |
+| **Codex** | Supported | Not supported | Not supported | Not supported | — |
+| **Gemini CLI** | Not supported | — | Not supported | Not supported | — |
+| **Amp Code** | Not supported | — | Not supported | Not supported | — |
 
 ### Agent skills directory mapping
 

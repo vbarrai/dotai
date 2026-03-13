@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — MCP configuration is not managed by maconfai. Reference only.
+
 # Cursor — MCP Servers Guide
 
 > Official source: [docs.cursor.com/context/model-context-protocol](https://docs.cursor.com/context/model-context-protocol)
@@ -59,11 +61,11 @@ Project-level configuration, committable to the repo:
 ```json
 {
   "mcpServers": {
-    "mon-serveur": {
+    "my-server": {
       "command": "node",
-      "args": ["chemin/vers/serveur.js"],
+      "args": ["path/to/server.js"],
       "env": {
-        "API_KEY": "ma-clé"
+        "API_KEY": "my-key"
       }
     }
   }
@@ -77,12 +79,12 @@ Project-level configuration, committable to the repo:
   "mcpServers": {
     "remote-sse": {
       "type": "sse",
-      "url": "https://mon-serveur.com/mcp/sse"
+      "url": "https://my-server.com/mcp/sse"
     },
     "remote-http": {
-      "url": "https://mon-serveur.com/mcp",
+      "url": "https://my-server.com/mcp",
       "headers": {
-        "Authorization": "Bearer mon-token"
+        "Authorization": "Bearer my-token"
       }
     }
   }
@@ -129,7 +131,7 @@ The `env` field allows passing API keys. You can also reference system variables
 {
   "filesystem": {
     "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/chemin"]
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/directory"]
   }
 }
 ```
@@ -140,7 +142,7 @@ The `env` field allows passing API keys. You can also reference system variables
 {
   "sqlite": {
     "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-sqlite", "chemin/vers/db.sqlite"]
+    "args": ["-y", "@modelcontextprotocol/server-sqlite", "path/to/db.sqlite"]
   }
 }
 ```
@@ -153,7 +155,7 @@ The `env` field allows passing API keys. You can also reference system variables
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-brave-search"],
     "env": {
-      "BRAVE_API_KEY": "clé"
+      "BRAVE_API_KEY": "your_key"
     }
   }
 }

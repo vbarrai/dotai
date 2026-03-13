@@ -1,3 +1,5 @@
+> **maconfai support: Supported** — Skills installation and management for Claude Code is fully implemented.
+
 # Claude Code — Skills Guide
 
 > Official source: [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
@@ -13,7 +15,7 @@ Skills follow the open [Agent Skills](https://agentskills.io) standard that work
 Each Skill is a directory with `SKILL.md` as the entry point:
 
 ```
-ma-skill/
+my-skill/
 ├── SKILL.md           # Main instructions (required)
 ├── template.md        # Template that Claude can fill in
 ├── examples/
@@ -30,7 +32,7 @@ The file contains two parts: a **YAML frontmatter** (between `---`) and **Markdo
 
 ```yaml
 ---
-name: ma-skill
+name: my-skill
 description: Description of what the skill does and when to use it.
 ---
 
@@ -153,7 +155,7 @@ Research $ARGUMENTS in depth:
 Keep `SKILL.md` under 500 lines. Move details into separate files:
 
 ```
-ma-skill/
+my-skill/
 ├── SKILL.md          # Overview + navigation
 ├── reference.md      # Detailed API docs (loaded on demand)
 ├── examples.md       # Examples (loaded on demand)

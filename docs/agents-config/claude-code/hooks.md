@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — Hooks are not managed by maconfai. Reference only.
+
 # Claude Code — Hooks Guide
 
 > Official source: [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks)
@@ -197,7 +199,7 @@ On exit 0, stdout JSON can control behavior:
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "Commande destructive bloquée"
+    "permissionDecisionReason": "Destructive command blocked"
   }
 }
 ```
@@ -219,7 +221,7 @@ Hooks can be defined in the frontmatter of Skills and sub-agents:
 ```yaml
 ---
 name: secure-operations
-description: Opérations avec vérifications de sécurité
+description: Operations with security checks
 hooks:
   PreToolUse:
     - matcher: "Bash"
@@ -272,7 +274,7 @@ if echo "$COMMAND" | grep -q 'rm -rf'; then
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: "Commande destructive bloquée par hook"
+      permissionDecisionReason: "Destructive command blocked par hook"
     }
   }'
 else

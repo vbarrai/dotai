@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — CLAUDE.md and settings are not managed by maconfai. Reference only.
+
 # Claude Code — CLAUDE.md and Configuration Guide
 
 > Official source: [code.claude.com/docs/en/claude-md](https://code.claude.com/docs/en/claude-md)

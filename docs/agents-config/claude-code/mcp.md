@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — MCP configuration is not managed by maconfai. Reference only.
+
 # Claude Code — MCP Servers Guide
 
 > Official source: [code.claude.com/docs/en/mcp](https://code.claude.com/docs/en/mcp)
@@ -29,7 +31,7 @@ Project-level MCP configuration file, committable to the repo:
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/chemin/vers/dossier"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/directory"]
     }
   }
 }
@@ -92,20 +94,20 @@ Project-scoped servers require approval before use.
 
 ```bash
 # Add a server
-claude mcp add --transport stdio --env API_KEY=xxx mon-serveur -- npx -y @package/server
+claude mcp add --transport stdio --env API_KEY=xxx my-server -- npx -y @package/server
 claude mcp add --transport http github https://api.githubcopilot.com/mcp/
 claude mcp add --scope project --transport http sentry https://mcp.sentry.dev/mcp
 
 # Add from JSON
-claude mcp add-json mon-serveur '{"command": "npx", "args": ["-y", "@package/server"]}'
+claude mcp add-json my-server '{"command": "npx", "args": ["-y", "@package/server"]}'
 
 # Import from Claude Desktop (macOS/WSL)
 claude mcp add-from-claude-desktop
 
 # List, inspect, remove
 claude mcp list
-claude mcp get mon-serveur
-claude mcp remove mon-serveur
+claude mcp get my-server
+claude mcp remove my-server
 
 # Reset project approval choices
 claude mcp reset-project-choices
@@ -170,7 +172,7 @@ Controlled filesystem access:
 {
   "filesystem": {
     "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/chemin/autorisé"]
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/allowed/path"]
   }
 }
 ```
@@ -185,7 +187,7 @@ GitHub integration (issues, PRs, repos):
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-github"],
     "env": {
-      "GITHUB_TOKEN": "ghp_votre_token"
+      "GITHUB_TOKEN": "ghp_your_token"
     }
   }
 }
@@ -214,7 +216,7 @@ Web search:
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-brave-search"],
     "env": {
-      "BRAVE_API_KEY": "votre_clé"
+      "BRAVE_API_KEY": "your_key"
     }
   }
 }
@@ -225,9 +227,9 @@ Web search:
 ```json
 {
   "remote-server": {
-    "url": "https://mon-serveur.com/mcp",
+    "url": "https://my-server.com/mcp",
     "headers": {
-      "Authorization": "Bearer mon-token"
+      "Authorization": "Bearer my-token"
     }
   }
 }

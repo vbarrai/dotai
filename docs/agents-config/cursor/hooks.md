@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — Hooks are not managed by maconfai. Reference only.
+
 # Cursor — Hooks Guide
 
 > Official source: [cursor.com/docs/hooks](https://cursor.com/docs/hooks)

@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — Rules are not managed by maconfai. Reference only.
+
 # Cursor — Rules Guide
 
 > Official source: [cursor.com/docs/context/rules](https://cursor.com/docs/context/rules)
@@ -32,21 +34,21 @@ Rules are persistent instructions that the Cursor agent sees at the beginning of
 
 ```
 ---
-description: Conventions de l'API REST
+description: REST API conventions
 globs: src/api/**/*.ts
 alwaysApply: false
 ---
 
-# Conventions API
+# API Conventions
 
 ## Endpoints
-- Utiliser les conventions RESTful
-- Retourner des formats d'erreur cohérents
-- Inclure la validation des requêtes
+- Use RESTful conventions
+- Return consistent error formats
+- Include request validation
 
-## Nommage
-- Routes en kebab-case
-- Contrôleurs en PascalCase
+## Naming
+- Routes in kebab-case
+- Controllers in PascalCase
 ```
 
 ### Frontmatter fields
@@ -70,15 +72,15 @@ A simple alternative to `.mdc` files: an `AGENTS.md` file in plain markdown at t
 ```markdown
 # Agent Instructions
 
-## Stack technique
+## Tech Stack
 - TypeScript (ESM)
 - React 19
 - Tailwind CSS
 
 ## Conventions
-- Pas de semicolons
+- No semicolons
 - Single quotes
-- Composants fonctionnels uniquement
+- Functional components only
 ```
 
 ## Recommended organization
@@ -121,46 +123,46 @@ A simple alternative to `.mdc` files: an `AGENTS.md` file in plain markdown at t
 alwaysApply: true
 ---
 
-# Stack technique
+# Tech Stack
 
 - TypeScript strict
-- React 19 avec Server Components
+- React 19 with Server Components
 - Tailwind CSS v4
 - Prisma ORM
 - PostgreSQL
 
 ## Conventions
-- Pas de `any` — utiliser `unknown` si nécessaire
-- Composants fonctionnels uniquement
-- Imports absolus via `@/`
+- No `any` — use `unknown` if needed
+- Functional components only
+- Absolute imports via `@/`
 ```
 
 ### Auto Attached Rule — Tests
 
 ```
 ---
-description: Conventions de test
+description: Testing conventions
 globs: "**/*.test.ts,**/*.spec.ts"
 ---
 
-# Conventions de test
+# Testing Conventions
 
-- Framework : Vitest
-- Nommage : `describe` → nom du module, `it` → comportement attendu
-- Pas de `test.only` en commit
-- Mocks : utiliser `vi.mock()` pour les dépendances externes
-- Chaque test doit être indépendant
+- Framework: Vitest
+- Naming: `describe` → module name, `it` → expected behavior
+- No `test.only` in commits
+- Mocks: use `vi.mock()` for external dependencies
+- Each test must be independent
 ```
 
 ### Agent Requested Rule — Deployment
 
 ```
 ---
-description: Processus de déploiement vers staging et production.
-  Utiliser quand on parle de déployer, release, ou mise en production.
+description: Deployment process for staging and production.
+  Use when discussing deploy, release, or production pushes.
 ---
 
-# Déploiement
+# Deployment
 
 ## Staging
 1. `pnpm build`
@@ -168,9 +170,9 @@ description: Processus de déploiement vers staging et production.
 3. `git push origin staging`
 
 ## Production
-1. Créer une PR vers `main`
-2. Attendre la CI verte
-3. Merge et tag la release
+1. Create a PR to `main`
+2. Wait for CI to pass
+3. Merge and tag the release
 ```
 
 ## Rules vs Skills

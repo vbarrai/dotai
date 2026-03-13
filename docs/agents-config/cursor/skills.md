@@ -1,3 +1,5 @@
+> **maconfai support: Supported** — Skills installation and management for Cursor is fully implemented.
+
 # Cursor — Agent Skills Guide
 
 > Official source: [cursor.com/docs/context/skills](https://cursor.com/docs/context/skills)
@@ -16,15 +18,15 @@ The format is the same open standard as for Claude Code:
 
 ```yaml
 ---
-name: ma-skill
-description: Ce que fait la skill et quand l'utiliser.
+name: my-skill
+description: What the skill does and when to use it.
 ---
 
 # Instructions
 
-1. Première étape
-2. Deuxième étape
-3. Troisième étape
+1. First step
+2. Second step
+3. Third step
 ```
 
 ### Frontmatter fields
@@ -44,7 +46,7 @@ description: Ce que fait la skill et quand l'utiliser.
 ## Skill structure
 
 ```
-ma-skill/
+my-skill/
 ├── SKILL.md           # Main instructions (required)
 ├── references/
 │   └── api-docs.md    # Documentation loaded on demand
@@ -71,12 +73,12 @@ Reusable workflows invocable with `/`:
 ```yaml
 ---
 name: deploy
-description: Déploie l'application en production
+description: Deploy the application to production
 ---
 
-1. Lancer les tests
-2. Builder l'application
-3. Pousser vers la cible de déploiement
+1. Run the tests
+2. Build the application
+3. Push to the deployment target
 ```
 
 ### Hooks
@@ -90,13 +92,13 @@ Instructions for domain-specific tasks.
 ```yaml
 ---
 name: create-component
-description: Crée un composant React avec tests et stories.
-  Utiliser quand on demande de créer un nouveau composant UI.
+description: Creates a React component with tests and stories.
+  Use when asked to create a new UI component.
 ---
 
-# Création de composant React
+# React Component Creation
 
-## Structure à créer
+## Structure to create
 
 ```
 src/components/<ComponentName>/
@@ -108,13 +110,13 @@ src/components/<ComponentName>/
 
 ## Conventions
 
-- Composant fonctionnel avec TypeScript
-- Props typées avec interface `<ComponentName>Props`
-- Export nommé + export par défaut dans index.ts
-- Tests avec Testing Library
-- Story par défaut + variantes
+- Functional component with TypeScript
+- Props typed with interface `<ComponentName>Props`
+- Named export + default export in index.ts
+- Tests with Testing Library
+- Default story + variants
 
-## Template du composant
+## Component template
 
 ```tsx
 import { type FC } from 'react'

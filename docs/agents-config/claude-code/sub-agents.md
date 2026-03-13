@@ -1,3 +1,5 @@
+> **maconfai support: Not supported** — Sub-agents are not managed by maconfai. Reference only.
+
 # Claude Code — Sub-agents Guide
 
 > Official source: [code.claude.com/docs/en/sub-agents](https://code.claude.com/docs/en/sub-agents)
