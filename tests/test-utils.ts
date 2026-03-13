@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile, access } from 'fs/promises';
-import { join } from 'path';
+import { mkdtemp, rm, writeFile, mkdir, readFile, readdir, access } from 'fs/promises';
+import { join, relative } from 'path';
 import { tmpdir } from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
@@ -104,11 +104,28 @@ export function setupScenario() {
     return exists(join(targetDir, path));
   }
 
+  async function thenFiles(): Promise<string[]> {
+    const files: string[] = [];
+    async function walk(dir: string) {
+      const entries = await readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          await walk(fullPath);
+        } else if (entry.isFile() || entry.isSymbolicLink()) {
+          files.push(relative(targetDir, fullPath));
+        }
+      }
+    }
+    await walk(targetDir);
+    return files.sort();
+  }
+
   async function thenMcpConfig(path: string): Promise<Record<string, any>> {
     const fullPath = join(targetDir, path);
     const content = await readFile(fullPath, 'utf-8');
     return JSON.parse(content);
   }
 
-  return { init, cleanup, given, givenSkill, givenSkillWithMcp, when, then, thenExists, thenMcpConfig, getTargetDir };
+  return { init, cleanup, given, givenSkill, givenSkillWithMcp, when, then, thenExists, thenFiles, thenMcpConfig, getTargetDir };
 }

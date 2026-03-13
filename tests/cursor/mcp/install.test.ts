@@ -4,7 +4,7 @@ import { join } from 'path';
 import { setupScenario } from '../../test-utils.ts';
 
 describe('cursor MCP install', () => {
-  const { init, cleanup, givenSkillWithMcp, when, thenExists, getTargetDir } = setupScenario();
+  const { init, cleanup, givenSkillWithMcp, when, thenFiles, getTargetDir } = setupScenario();
 
   beforeEach(() => init());
   afterEach(() => cleanup());
@@ -24,7 +24,14 @@ describe('cursor MCP install', () => {
 
     await when({ skills: ['my-skill'], agents: ['cursor'] });
 
-    expect(await thenExists('.cursor/skills/my-skill/SKILL.md')).toBe(true);
+    expect(await thenFiles()).toMatchInlineSnapshot(`
+      [
+        ".agents/skills/my-skill/SKILL.md",
+        ".agents/skills/my-skill/mcp.json",
+        ".cursor/mcp.json",
+        ".cursor/skills/my-skill",
+      ]
+    `);
 
     const content = await readFile(join(getTargetDir(), '.cursor/mcp.json'), 'utf-8');
     expect(content).toMatchInlineSnapshot(`
