@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import { setupScenario } from '../../test-utils.ts';
 
 describe('cursor MCP install', () => {
-  const { init, cleanup, givenSkillWithMcp, when, thenExists, thenMcpConfig } = setupScenario();
+  const { init, cleanup, givenSkillWithMcp, when, thenExists, getTargetDir } = setupScenario();
 
   beforeEach(() => init());
   afterEach(() => cleanup());
@@ -22,26 +24,33 @@ describe('cursor MCP install', () => {
 
     await when({ skills: ['my-skill'], agents: ['cursor'] });
 
-    // Skill is installed
     expect(await thenExists('.cursor/skills/my-skill/SKILL.md')).toBe(true);
 
-    // MCP config file exists and has correct content
-    const config = await thenMcpConfig('.cursor/mcp.json');
-
-    // github server: env vars translated to ${env:...} syntax
-    expect(config.mcpServers.github).toEqual({
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-github'],
-      env: { GITHUB_TOKEN: '${env:GITHUB_TOKEN}' },
-    });
-
-    // linear server: no env vars, args unchanged
-    expect(config.mcpServers.linear).toEqual({
-      command: 'npx',
-      args: ['-y', 'mcp-remote', 'https://mcp.linear.app/mcp'],
-    });
-
-    // No other servers
-    expect(Object.keys(config.mcpServers)).toEqual(['github', 'linear']);
+    const content = await readFile(join(getTargetDir(), '.cursor/mcp.json'), 'utf-8');
+    expect(content).toMatchInlineSnapshot(`
+      "{
+        "mcpServers": {
+          "github": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+              "GITHUB_TOKEN": "\${env:GITHUB_TOKEN}"
+            }
+          },
+          "linear": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "mcp-remote",
+              "https://mcp.linear.app/mcp"
+            ]
+          }
+        }
+      }
+      "
+    `);
   });
 });
