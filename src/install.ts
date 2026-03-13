@@ -50,6 +50,7 @@ export async function runInstall(args: string[]): Promise<void> {
   const skipPrompts = args.includes('-y') || args.includes('--yes');
   const argAgents = parseAgentsArg(args);
   const argSkills = parseListArg(args, 'skills');
+  const argBranch = parseListArg(args, 'branch')?.[0];
 
   console.log();
   p.intro(pc.bgCyan(pc.black(' maconfai install ')));
@@ -61,7 +62,9 @@ export async function runInstall(args: string[]): Promise<void> {
     // Parse source
     spinner.start('Parsing source...');
     const parsed = parseSource(source);
-    spinner.stop(`Source: ${parsed.type === 'local' ? parsed.localPath! : parsed.url}`);
+    // --branch flag overrides any ref from the source
+    if (argBranch) parsed.ref = argBranch;
+    spinner.stop(`Source: ${parsed.type === 'local' ? parsed.localPath! : parsed.url}${parsed.ref ? ` (${parsed.ref})` : ''}`);
 
     // Resolve skills directory
     let skillsDir: string;

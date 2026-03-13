@@ -25,7 +25,11 @@ maconfai install owner/repo
 # Install with no prompts
 maconfai install owner/repo -y
 
-# Install from a GitHub URL (with optional subpath)
+# Install from a specific branch
+maconfai install owner/repo#develop
+maconfai install owner/repo --branch=develop
+
+# Install from a GitHub URL (with optional branch and subpath)
 maconfai install https://github.com/owner/repo/tree/main/path/to/skills
 
 # Install from a local directory

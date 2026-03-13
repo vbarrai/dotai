@@ -21,14 +21,19 @@ ${BOLD}Install Options:${RESET}
   -y, --yes                      Skip prompts
   --agents=claude,cursor,codex   Install to specific agents
   --skills=skill-a,skill-b      Install specific skills
+  --branch=<name>                Use a specific branch
 
 ${BOLD}Sources:${RESET}
   owner/repo                             GitHub shorthand
+  owner/repo#branch                      GitHub shorthand with branch
   https://github.com/owner/repo          GitHub URL
+  https://github.com/owner/repo/tree/branch  GitHub URL with branch
   ./local/path                           Local path
 
 ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} maconfai install vercel-labs/agent-skills
+  ${DIM}$${RESET} maconfai install vercel-labs/agent-skills#develop
+  ${DIM}$${RESET} maconfai install vercel-labs/agent-skills --branch=develop
   ${DIM}$${RESET} maconfai install vercel-labs/agent-skills -y
   ${DIM}$${RESET} npx maconfai install owner/repo
   ${DIM}$${RESET} maconfai install                              ${DIM}# uninstall mode${RESET}

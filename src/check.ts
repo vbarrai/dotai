@@ -42,7 +42,7 @@ export async function runCheck(): Promise<void> {
     }
 
     try {
-      const latestHash = await fetchSkillFolderHash(entry.source, entry.skillPath, token);
+      const latestHash = await fetchSkillFolderHash(entry.source, entry.skillPath, token, entry.ref);
 
       if (!latestHash) {
         errors.push({ name, error: 'Could not fetch from GitHub' });
@@ -94,6 +94,7 @@ export async function runCheck(): Promise<void> {
     for (const { name, entry } of updates) {
       // Build install URL from source
       let installUrl = entry.sourceUrl.replace(/\.git$/, '').replace(/\/$/, '');
+      const branch = entry.ref || 'main';
 
       // Add subpath if available
       if (entry.skillPath) {
@@ -102,13 +103,16 @@ export async function runCheck(): Promise<void> {
         else if (skillFolder.endsWith('SKILL.md')) skillFolder = skillFolder.slice(0, -8);
         if (skillFolder.endsWith('/')) skillFolder = skillFolder.slice(0, -1);
 
-        installUrl = `${installUrl}/tree/main/${skillFolder}`;
+        installUrl = `${installUrl}/tree/${branch}/${skillFolder}`;
       }
 
       // Re-run install for this skill
+      const installArgs = [process.argv[1]!, 'install', installUrl, '-g', '-y']
+      if (entry.ref) installArgs.push(`--branch=${entry.ref}`)
+
       const result = spawnSync(
         process.execPath,
-        [process.argv[1]!, 'install', installUrl, '-g', '-y'],
+        installArgs,
         {
           stdio: ['inherit', 'pipe', 'pipe'],
         }
