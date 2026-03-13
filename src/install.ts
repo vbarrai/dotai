@@ -11,6 +11,7 @@ import {
 } from './installer.ts';
 import { agents, detectInstalledAgents } from './agents.ts';
 import { readLock, removeFromLock } from './lock.ts';
+import { listInstalledMcpServerNames } from './mcp.ts';
 import type { Skill, AgentType, McpServerConfig } from './types.ts';
 
 const ALL_AGENTS: AgentType[] = ['claude-code', 'cursor', 'codex'];
@@ -153,13 +154,7 @@ export async function runInstall(args: string[]): Promise<void> {
       } else if (skipPrompts) {
         selectedMcpNames = new Set(allMcpEntries.map((e) => e.serverName));
       } else {
-        const lock = await readLock();
-        const installedMcpNames = new Set<string>();
-        for (const entry of Object.values(lock.skills)) {
-          if (entry.mcpServers) {
-            for (const name of entry.mcpServers) installedMcpNames.add(name);
-          }
-        }
+        const installedMcpNames = await listInstalledMcpServerNames();
 
         const mcpChoices = allMcpEntries.map((e) => ({
           value: e.serverName,

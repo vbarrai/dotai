@@ -87,6 +87,23 @@ export async function installMcpServers(
   return { installed, skipped }
 }
 
+export async function listInstalledMcpServerNames(options: { cwd?: string } = {}): Promise<Set<string>> {
+  const cwd = options.cwd || process.cwd()
+  const names = new Set<string>()
+
+  for (const agent of Object.values(agents)) {
+    if (!agent.mcpConfigPath) continue
+    const config = await readMcpConfig(join(cwd, agent.mcpConfigPath))
+    if (config.mcpServers) {
+      for (const name of Object.keys(config.mcpServers)) {
+        names.add(name)
+      }
+    }
+  }
+
+  return names
+}
+
 export async function uninstallMcpServers(
   serverNames: string[],
   agentType: AgentType,
