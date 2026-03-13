@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { join, basename, dirname } from 'path';
 import matter from 'gray-matter';
-import type { Skill } from './types.ts';
+import type { Skill, McpServerConfig } from './types.ts';
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '__pycache__']);
 
@@ -14,6 +14,19 @@ async function hasSkillMd(dir: string): Promise<boolean> {
   }
 }
 
+async function parseMcpJson(skillDir: string): Promise<Record<string, McpServerConfig> | undefined> {
+  try {
+    const content = await readFile(join(skillDir, 'mcp.json'), 'utf-8');
+    const parsed = JSON.parse(content) as { mcpServers?: Record<string, McpServerConfig> };
+    if (parsed.mcpServers && typeof parsed.mcpServers === 'object') {
+      return parsed.mcpServers;
+    }
+  } catch {
+    // No mcp.json or invalid — that's fine
+  }
+  return undefined;
+}
+
 export async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
   try {
     const content = await readFile(skillMdPath, 'utf-8');
@@ -23,11 +36,15 @@ export async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
       return null;
     }
 
+    const skillDir = dirname(skillMdPath);
+    const mcpServers = await parseMcpJson(skillDir);
+
     return {
       name: data.name,
       description: data.description,
-      path: dirname(skillMdPath),
+      path: skillDir,
       rawContent: content,
+      mcpServers,
     };
   } catch {
     return null;

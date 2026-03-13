@@ -10,8 +10,8 @@ import {
   listInstalledSkills,
 } from './installer.ts';
 import { agents, detectInstalledAgents } from './agents.ts';
-import { removeFromLock } from './lock.ts';
-import type { Skill, AgentType } from './types.ts';
+import { readLock, removeFromLock } from './lock.ts';
+import type { Skill, AgentType, McpServerConfig } from './types.ts';
 
 const ALL_AGENTS: AgentType[] = ['claude-code', 'cursor', 'codex'];
 
@@ -50,6 +50,7 @@ export async function runInstall(args: string[]): Promise<void> {
   const skipPrompts = args.includes('-y') || args.includes('--yes');
   const argAgents = parseAgentsArg(args);
   const argSkills = parseListArg(args, 'skills');
+  const argMcps = parseListArg(args, 'mcps');
   const argBranch = parseListArg(args, 'branch')?.[0];
 
   console.log();
@@ -132,6 +133,69 @@ export async function runInstall(args: string[]): Promise<void> {
       selectedSkills = selected as Skill[];
     }
 
+    // Collect MCP servers from selected skills
+    interface McpEntry { serverName: string; skillName: string; config: McpServerConfig }
+    const allMcpEntries: McpEntry[] = [];
+    for (const skill of selectedSkills) {
+      if (skill.mcpServers) {
+        for (const [serverName, config] of Object.entries(skill.mcpServers)) {
+          allMcpEntries.push({ serverName, skillName: skill.name, config });
+        }
+      }
+    }
+
+    // Select MCP servers
+    let selectedMcpNames: Set<string> = new Set();
+
+    if (allMcpEntries.length > 0) {
+      if (argMcps) {
+        selectedMcpNames = new Set(argMcps);
+      } else if (skipPrompts) {
+        selectedMcpNames = new Set(allMcpEntries.map((e) => e.serverName));
+      } else {
+        const lock = await readLock();
+        const installedMcpNames = new Set<string>();
+        for (const entry of Object.values(lock.skills)) {
+          if (entry.mcpServers) {
+            for (const name of entry.mcpServers) installedMcpNames.add(name);
+          }
+        }
+
+        const mcpChoices = allMcpEntries.map((e) => ({
+          value: e.serverName,
+          label: `${e.serverName} ${pc.dim(`(from: ${e.skillName})`)}`,
+        }));
+
+        const initialMcpValues = allMcpEntries
+          .filter((e) => installedMcpNames.has(e.serverName))
+          .map((e) => e.serverName);
+
+        const selectedMcp = await p.multiselect({
+          message: `Select MCP servers to install ${pc.dim('(space to toggle)')}`,
+          options: mcpChoices as any,
+          initialValues: initialMcpValues,
+          required: false,
+        });
+
+        if (p.isCancel(selectedMcp)) {
+          p.cancel('Cancelled');
+          await cleanup(tempDir);
+          process.exit(0);
+        }
+
+        selectedMcpNames = new Set(selectedMcp as string[]);
+      }
+    }
+
+    // Build per-skill MCP server maps (only selected servers)
+    const mcpBySkill = new Map<string, Record<string, McpServerConfig>>();
+    for (const entry of allMcpEntries) {
+      if (selectedMcpNames.has(entry.serverName)) {
+        if (!mcpBySkill.has(entry.skillName)) mcpBySkill.set(entry.skillName, {});
+        mcpBySkill.get(entry.skillName)![entry.serverName] = entry.config;
+      }
+    }
+
     // Determine which agents previously had skills installed
     const previousAgents = new Set<AgentType>();
     for (const s of installed) {
@@ -200,6 +264,9 @@ export async function runInstall(args: string[]): Promise<void> {
       if (selectedSkills.length > 0) {
         p.log.info(`Install: ${selectedSkills.map((s) => pc.cyan(s.name)).join(', ')}`);
       }
+      if (selectedMcpNames.size > 0) {
+        p.log.info(`MCP servers: ${[...selectedMcpNames].map((n) => pc.cyan(n)).join(', ')}`);
+      }
       if (toUninstall.length > 0) {
         p.log.info(`Remove skills: ${toUninstall.map((s) => pc.red(s.name)).join(', ')}`);
       }
@@ -219,9 +286,12 @@ export async function runInstall(args: string[]): Promise<void> {
     // Uninstall unchecked skills from ALL agents (selected + removed)
     if (toUninstall.length > 0) {
       spinner.start('Removing unchecked skills...');
+      const lock = await readLock();
       for (const skill of toUninstall) {
+        const lockEntry = lock.skills[skill.name];
+        const mcpServerNames = lockEntry?.mcpServers;
         for (const agent of ALL_AGENTS) {
-          await uninstallSkill(skill.name, agent, { global: false });
+          await uninstallSkill(skill.name, agent, { global: false, mcpServerNames });
         }
       }
       spinner.stop(`Removed ${toUninstall.length} skill(s)`);
@@ -246,8 +316,12 @@ export async function runInstall(args: string[]): Promise<void> {
       let failCount = 0;
 
       for (const skill of selectedSkills) {
+        const skillMcpServers = mcpBySkill.get(skill.name);
         for (const agent of targetAgents) {
-          const result = await installSkill(skill, agent, { global: false });
+          const result = await installSkill(skill, agent, {
+            global: false,
+            mcpServers: skillMcpServers,
+          });
           if (result.success) {
             successCount++;
           } else {
@@ -255,7 +329,6 @@ export async function runInstall(args: string[]): Promise<void> {
             p.log.error(`Failed: ${skill.name} -> ${agents[agent].displayName}: ${result.error}`);
           }
         }
-
       }
 
       spinner.stop('Done');
@@ -331,9 +404,12 @@ async function runUninstall(): Promise<void> {
 
   spinner.start('Removing skills...');
 
+  const lock = await readLock();
   for (const skill of toRemove) {
+    const lockEntry = lock.skills[skill.name];
+    const mcpServerNames = lockEntry?.mcpServers;
     for (const agent of skill.agents) {
-      await uninstallSkill(skill.dirName, agent, { global: skill.scope === 'global' });
+      await uninstallSkill(skill.dirName, agent, { global: skill.scope === 'global', mcpServerNames });
     }
 
     if (skill.scope === 'global') {

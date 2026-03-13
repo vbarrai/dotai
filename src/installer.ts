@@ -1,9 +1,10 @@
 import { mkdir, cp, readdir, rm, access, stat, lstat, readlink, symlink, realpath } from 'fs/promises';
 import { join, basename, normalize, resolve, sep, relative, dirname } from 'path';
 import { homedir, platform } from 'os';
-import type { Skill, AgentType } from './types.ts';
+import type { Skill, AgentType, McpServerConfig } from './types.ts';
 import { agents } from './agents.ts';
 import { parseSkillMd } from './skills.ts';
+import { installMcpServers, uninstallMcpServers } from './mcp.ts';
 
 const AGENTS_DIR = '.agents';
 const SKILLS_SUBDIR = 'skills';
@@ -115,8 +116,8 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
 export async function installSkill(
   skill: Skill,
   agentType: AgentType,
-  options: { global?: boolean; cwd?: string } = {}
-): Promise<{ success: boolean; path: string; error?: string }> {
+  options: { global?: boolean; cwd?: string; mcpServers?: Record<string, McpServerConfig> } = {}
+): Promise<{ success: boolean; path: string; error?: string; mcpInstalled?: string[]; mcpSkipped?: string[] }> {
   const isGlobal = options.global ?? false;
   const cwd = options.cwd || process.cwd();
   const skillName = sanitizeName(skill.name || basename(skill.path));
@@ -154,7 +155,16 @@ export async function installSkill(
       }
     }
 
-    return { success: true, path: agentDir };
+    // 3. Install MCP servers if provided
+    let mcpInstalled: string[] = []
+    let mcpSkipped: string[] = []
+    if (options.mcpServers && Object.keys(options.mcpServers).length > 0) {
+      const mcpResult = await installMcpServers(options.mcpServers, agentType, { cwd: options.cwd })
+      mcpInstalled = mcpResult.installed
+      mcpSkipped = mcpResult.skipped
+    }
+
+    return { success: true, path: agentDir, mcpInstalled, mcpSkipped };
   } catch (error) {
     return {
       success: false,
@@ -167,7 +177,7 @@ export async function installSkill(
 export async function uninstallSkill(
   skillName: string,
   agentType: AgentType,
-  options: { global?: boolean; cwd?: string } = {}
+  options: { global?: boolean; cwd?: string; mcpServerNames?: string[] } = {}
 ): Promise<boolean> {
   const isGlobal = options.global ?? false;
   const cwd = options.cwd || process.cwd();
@@ -185,6 +195,11 @@ export async function uninstallSkill(
   const canonicalDir = join(canonicalBase, sanitized);
   if (isPathSafe(canonicalBase, canonicalDir)) {
     await rm(canonicalDir, { recursive: true, force: true }).catch(() => {});
+  }
+
+  // Remove MCP servers if provided
+  if (options.mcpServerNames && options.mcpServerNames.length > 0) {
+    await uninstallMcpServers(options.mcpServerNames, agentType, { cwd });
   }
 
   return true;

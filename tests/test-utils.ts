@@ -4,10 +4,10 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import type { AgentType } from './types.ts';
+import type { AgentType, McpServerConfig } from '../src/types.ts';
 
 const execFileAsync = promisify(execFile);
-const CLI_PATH = join(import.meta.dirname, 'cli.ts');
+const CLI_PATH = join(import.meta.dirname, '..', 'src', 'cli.ts');
 
 export type FileTree = Record<string, string>;
 
@@ -58,7 +58,18 @@ export function setupScenario() {
     await given(files);
   }
 
-  async function when(opts: { skills?: string[]; agents?: AgentType[]; extraArgs?: string[] }) {
+  async function givenSkillWithMcp(
+    name: string,
+    mcpServers: Record<string, McpServerConfig>
+  ) {
+    const files: FileTree = {
+      [`./skills/${name}/SKILL.md`]: skillFile(name),
+      [`./skills/${name}/mcp.json`]: JSON.stringify({ mcpServers }, null, 2),
+    };
+    await given(files);
+  }
+
+  async function when(opts: { skills?: string[]; agents?: AgentType[]; mcps?: string[]; extraArgs?: string[] }) {
     const args = ['--experimental-strip-types', CLI_PATH, 'install', sourceDir, '-y'];
 
     if (opts.skills?.length) {
@@ -66,6 +77,9 @@ export function setupScenario() {
     }
     if (opts.agents?.length) {
       args.push(`--agents=${opts.agents.join(',')}`);
+    }
+    if (opts.mcps?.length) {
+      args.push(`--mcps=${opts.mcps.join(',')}`);
     }
     if (opts.extraArgs?.length) {
       args.push(...opts.extraArgs);
@@ -90,5 +104,11 @@ export function setupScenario() {
     return exists(join(targetDir, path));
   }
 
-  return { init, cleanup, given, givenSkill, when, then, thenExists, getTargetDir };
+  async function thenMcpConfig(path: string): Promise<Record<string, any>> {
+    const fullPath = join(targetDir, path);
+    const content = await readFile(fullPath, 'utf-8');
+    return JSON.parse(content);
+  }
+
+  return { init, cleanup, given, givenSkill, givenSkillWithMcp, when, then, thenExists, thenMcpConfig, getTargetDir };
 }

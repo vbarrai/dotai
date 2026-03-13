@@ -35,10 +35,12 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - `src/source-parser.ts` — Parses source arguments (GitHub URLs, owner/repo, local paths)
 - `src/lock.ts` — Lock file management
 - `src/check.ts` — Update checking
-- `src/test-utils.ts` — Test helpers (`setupScenario`, `skillFile`)
-- `src/install.test.ts` — E2E tests for install/uninstall
-- `src/installer.test.ts` — Unit tests for installer
-- `src/sanity.test.ts` — Sanity check tests
+- `src/mcp.ts` — MCP server config install/uninstall and env var translation
+- `tests/test-utils.ts` — Test helpers (`setupScenario`, `skillFile`)
+- `tests/install.test.ts` — E2E tests for install/uninstall
+- `tests/installer.test.ts` — Unit tests for installer
+- `tests/mcp.test.ts` — Unit tests for MCP module
+- `tests/sanity.test.ts` — Sanity check tests
 
 ## Key concepts
 
@@ -46,20 +48,24 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory
 - **Canonical dir**: `.agents/skills/<name>/` — single source of truth for skill files
 - **Agent dirs**: `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.gemini/skills/`, `.amp/skills/` — symlinked to canonical dir
-- **CLI flags**: `-y`/`--yes` (skip prompts), `--skills=a,b` (filter skills), `--agents=claude-code,cursor` (filter agents)
+- **MCP servers**: Defined in `mcp.json` alongside `SKILL.md`, merged into agent config files (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor)
+- **CLI flags**: `-y`/`--yes` (skip prompts), `--skills=a,b` (filter skills), `--agents=claude-code,cursor` (filter agents), `--mcps=mcp1,mcp2` (filter MCP servers)
 
 ## Testing conventions
 
-- Tests use `setupScenario()` from `test-utils.ts` which provides:
+- Tests live in `tests/` directory
+- Tests use `setupScenario()` from `tests/test-utils.ts` which provides:
   - `init()` / `cleanup()` — temp directory setup/teardown
   - `givenSkill(...names)` — creates skill fixtures
-  - `when({ skills?, agents?, extraArgs? })` — runs the CLI with `-y` flag
+  - `givenSkillWithMcp(name, mcpServers)` — creates skill with MCP config
+  - `when({ skills?, agents?, mcps?, extraArgs? })` — runs the CLI with `-y` flag
   - `then(fileTree)` — asserts file contents
   - `thenExists(path)` — checks file existence
+  - `thenMcpConfig(path)` — reads and parses MCP config file
   - `getTargetDir()` — returns the target directory path
 - Tests run the actual CLI via `node --experimental-strip-types` as a subprocess
 - Each test gets an isolated temp directory (source + target)
-- Test describe blocks: `basic installation`, `--skills filter`, `--agents filter`, `-y / --yes flag`, `uninstall skill`, `uninstall agent`
+- Test describe blocks: `basic installation`, `--skills filter`, `--agents filter`, `-y / --yes flag`, `uninstall skill`, `uninstall agent`, `MCP installation`
 
 ## Knowledge base — Agent configuration reference
 
