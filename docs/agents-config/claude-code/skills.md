@@ -35,7 +35,6 @@ The file contains two parts: a **YAML frontmatter** (between `---`) and **Markdo
 name: my-skill
 description: Description of what the skill does and when to use it.
 ---
-
 Instructions that Claude will follow when the Skill is invoked.
 
 1. First step
@@ -45,27 +44,27 @@ Instructions that Claude will follow when the Skill is invoked.
 
 ## Frontmatter Fields
 
-| Field                      | Required    | Description |
-|:---------------------------|:------------|:------------|
-| `name`                     | No          | Display name. Lowercase, digits, and hyphens only (max 64 chars). If omitted, uses the directory name. |
-| `description`              | Recommended | What the Skill does and when to use it. Claude uses this field to decide when to load the Skill. Max 1024 chars. |
-| `argument-hint`            | No          | Hint displayed during auto-completion. E.g., `[issue-number]`, `[filename] [format]`. |
-| `disable-model-invocation` | No          | `true` = prevents Claude from automatically loading this Skill. For manual workflows (`/deploy`, `/commit`). Default: `false`. |
-| `user-invocable`           | No          | `false` = hidden from the `/` menu. For background knowledge. Default: `true`. |
-| `allowed-tools`            | No          | Tools Claude can use without asking permission when the Skill is active. E.g., `Read, Grep, Glob`. |
-| `model`                    | No          | Model to use when the Skill is active. |
-| `context`                  | No          | `fork` = run in an isolated sub-agent. |
+| Field                      | Required    | Description                                                                                                                             |
+| :------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                     | No          | Display name. Lowercase, digits, and hyphens only (max 64 chars). If omitted, uses the directory name.                                  |
+| `description`              | Recommended | What the Skill does and when to use it. Claude uses this field to decide when to load the Skill. Max 1024 chars.                        |
+| `argument-hint`            | No          | Hint displayed during auto-completion. E.g., `[issue-number]`, `[filename] [format]`.                                                   |
+| `disable-model-invocation` | No          | `true` = prevents Claude from automatically loading this Skill. For manual workflows (`/deploy`, `/commit`). Default: `false`.          |
+| `user-invocable`           | No          | `false` = hidden from the `/` menu. For background knowledge. Default: `true`.                                                          |
+| `allowed-tools`            | No          | Tools Claude can use without asking permission when the Skill is active. E.g., `Read, Grep, Glob`.                                      |
+| `model`                    | No          | Model to use when the Skill is active.                                                                                                  |
+| `context`                  | No          | `fork` = run in an isolated sub-agent.                                                                                                  |
 | `agent`                    | No          | Type of sub-agent to use with `context: fork`. Options: `Explore`, `Plan`, `general-purpose`, or a custom agent from `.claude/agents/`. |
-| `hooks`                    | No          | Hooks tied to the Skill's lifecycle. |
+| `hooks`                    | No          | Hooks tied to the Skill's lifecycle.                                                                                                    |
 
 ## Where to Store Skills
 
-| Scope       | Path                                               | Applies to |
-|:------------|:---------------------------------------------------|:-----------|
-| Enterprise  | Managed settings                                   | All users in the organization |
-| Personal    | `~/.claude/skills/<name>/SKILL.md`                 | All your projects |
-| Project     | `.claude/skills/<name>/SKILL.md`                   | This project only |
-| Plugin      | `<plugin>/skills/<name>/SKILL.md`                  | Where the plugin is activated |
+| Scope      | Path                               | Applies to                    |
+| :--------- | :--------------------------------- | :---------------------------- |
+| Enterprise | Managed settings                   | All users in the organization |
+| Personal   | `~/.claude/skills/<name>/SKILL.md` | All your projects             |
+| Project    | `.claude/skills/<name>/SKILL.md`   | This project only             |
+| Plugin     | `<plugin>/skills/<name>/SKILL.md`  | Where the plugin is activated |
 
 **Priority**: enterprise > personal > project. Plugin Skills use a `plugin:skill` namespace.
 
@@ -75,12 +74,12 @@ When working in a subdirectory, Claude Code also discovers Skills in nested `.cl
 
 ## Substitution Variables
 
-| Variable               | Description |
-|:-----------------------|:------------|
+| Variable               | Description                            |
+| :--------------------- | :------------------------------------- |
 | `$ARGUMENTS`           | All arguments passed to the invocation |
-| `$ARGUMENTS[N]` / `$N`| Argument by index (0-based) |
-| `${CLAUDE_SESSION_ID}` | Current session ID |
-| `${CLAUDE_SKILL_DIR}`  | Directory containing the SKILL.md |
+| `$ARGUMENTS[N]` / `$N` | Argument by index (0-based)            |
+| `${CLAUDE_SESSION_ID}` | Current session ID                     |
+| `${CLAUDE_SKILL_DIR}`  | Directory containing the SKILL.md      |
 
 **Example:**
 
@@ -90,7 +89,6 @@ name: fix-issue
 description: Fixes a GitHub issue
 disable-model-invocation: true
 ---
-
 Fix GitHub issue $ARGUMENTS following our standards.
 
 1. Read the issue description
@@ -104,11 +102,11 @@ Usage: `/fix-issue 123`
 
 ## Invocation Control
 
-| Frontmatter                      | You invoke | Claude invokes | Loaded in context |
-|:---------------------------------|:-----------|:---------------|:-------------------|
-| (default)                        | Yes        | Yes            | Description always, content on invocation |
+| Frontmatter                      | You invoke | Claude invokes | Loaded in context                             |
+| :------------------------------- | :--------- | :------------- | :-------------------------------------------- |
+| (default)                        | Yes        | Yes            | Description always, content on invocation     |
 | `disable-model-invocation: true` | Yes        | No             | Neither description nor content until invoked |
-| `user-invocable: false`          | No         | Yes            | Description always, content on invocation |
+| `user-invocable: false`          | No         | Yes            | Description always, content on invocation     |
 
 ## Dynamic Context Injection
 
@@ -174,13 +172,13 @@ Reference them from `SKILL.md`:
 
 ## Built-in Skills
 
-| Skill | Description |
-|:------|:------------|
-| `/simplify` | Code review (reuse, quality, efficiency) then fixes |
-| `/batch <instruction>` | Large-scale changes in parallel via git worktrees |
-| `/debug [description]` | Claude Code session diagnostics |
-| `/loop [interval] <prompt>` | Runs a prompt at regular intervals |
-| `/claude-api` | Loads the Claude API reference for your language |
+| Skill                       | Description                                         |
+| :-------------------------- | :-------------------------------------------------- |
+| `/simplify`                 | Code review (reuse, quality, efficiency) then fixes |
+| `/batch <instruction>`      | Large-scale changes in parallel via git worktrees   |
+| `/debug [description]`      | Claude Code session diagnostics                     |
+| `/loop [interval] <prompt>` | Runs a prompt at regular intervals                  |
+| `/claude-api`               | Loads the Claude API reference for your language    |
 
 ## Legacy Commands (`.claude/commands/`)
 

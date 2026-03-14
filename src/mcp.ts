@@ -15,7 +15,10 @@ export function translateEnvVar(value: string, syntax: McpEnvSyntax): string {
   return value.replace(/\$\{(?!env:)([^}]+)\}/g, '${env:$1}')
 }
 
-function translateStringFields(obj: Record<string, unknown>, syntax: McpEnvSyntax): Record<string, unknown> {
+function translateStringFields(
+  obj: Record<string, unknown>,
+  syntax: McpEnvSyntax,
+): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string') {
@@ -31,9 +34,15 @@ function translateStringFields(obj: Record<string, unknown>, syntax: McpEnvSynta
   return result
 }
 
-export function translateServerConfig(server: McpServerConfig, syntax: McpEnvSyntax): McpServerConfig {
+export function translateServerConfig(
+  server: McpServerConfig,
+  syntax: McpEnvSyntax,
+): McpServerConfig {
   if (syntax === 'bare') return server
-  return translateStringFields(server as unknown as Record<string, unknown>, syntax) as unknown as McpServerConfig
+  return translateStringFields(
+    server as unknown as Record<string, unknown>,
+    syntax,
+  ) as unknown as McpServerConfig
 }
 
 async function readMcpConfig(filePath: string): Promise<McpConfigFile> {
@@ -53,7 +62,7 @@ async function writeMcpConfig(filePath: string, config: McpConfigFile): Promise<
 export async function installMcpServers(
   servers: Record<string, McpServerConfig>,
   agentType: AgentType,
-  options: { cwd?: string } = {}
+  options: { cwd?: string } = {},
 ): Promise<{ installed: string[]; skipped: string[] }> {
   const agent = agents[agentType]
   if (!agent.mcpConfigPath || !agent.mcpEnvSyntax) {
@@ -87,7 +96,9 @@ export async function installMcpServers(
   return { installed, skipped }
 }
 
-export async function listInstalledMcpServerNames(options: { cwd?: string } = {}): Promise<Set<string>> {
+export async function listInstalledMcpServerNames(
+  options: { cwd?: string } = {},
+): Promise<Set<string>> {
   const cwd = options.cwd || process.cwd()
   const names = new Set<string>()
 
@@ -107,7 +118,7 @@ export async function listInstalledMcpServerNames(options: { cwd?: string } = {}
 export async function uninstallMcpServers(
   serverNames: string[],
   agentType: AgentType,
-  options: { cwd?: string } = {}
+  options: { cwd?: string } = {},
 ): Promise<void> {
   const agent = agents[agentType]
   if (!agent.mcpConfigPath) return

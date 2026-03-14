@@ -1,11 +1,11 @@
-import { isAbsolute, resolve } from 'path';
+import { isAbsolute, resolve } from 'path'
 
 export interface ParsedSource {
-  type: 'github' | 'local';
-  url: string;
-  subpath?: string;
-  localPath?: string;
-  ref?: string;
+  type: 'github' | 'local'
+  url: string
+  subpath?: string
+  localPath?: string
+  ref?: string
 }
 
 function isLocalPath(input: string): boolean {
@@ -15,7 +15,7 @@ function isLocalPath(input: string): boolean {
     input.startsWith('../') ||
     input === '.' ||
     input === '..'
-  );
+  )
 }
 
 /**
@@ -41,50 +41,55 @@ function extractBranchFragment(input: string): [string, string | undefined] {
  */
 export function parseSource(input: string): ParsedSource {
   if (isLocalPath(input)) {
-    return { type: 'local', url: resolve(input), localPath: resolve(input) };
+    return { type: 'local', url: resolve(input), localPath: resolve(input) }
   }
 
   // GitHub URL with path: https://github.com/owner/repo/tree/branch/path
-  const treeWithPath = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)/);
+  const treeWithPath = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)/)
   if (treeWithPath) {
-    const [, owner, repo, ref, subpath] = treeWithPath;
-    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, ref, subpath };
+    const [, owner, repo, ref, subpath] = treeWithPath
+    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, ref, subpath }
   }
 
   // GitHub URL with branch: https://github.com/owner/repo/tree/branch
-  const treeBranch = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)$/);
+  const treeBranch = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)$/)
   if (treeBranch) {
-    const [, owner, repo, ref] = treeBranch;
-    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, ref };
+    const [, owner, repo, ref] = treeBranch
+    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, ref }
   }
 
   // GitHub URL: https://github.com/owner/repo
-  const githubUrl = input.match(/github\.com\/([^/]+)\/([^/]+)/);
+  const githubUrl = input.match(/github\.com\/([^/]+)\/([^/]+)/)
   if (githubUrl) {
-    const [, owner, repo] = githubUrl;
-    const cleanRepo = repo!.replace(/\.git$/, '');
-    return { type: 'github', url: `https://github.com/${owner}/${cleanRepo}.git` };
+    const [, owner, repo] = githubUrl
+    const cleanRepo = repo!.replace(/\.git$/, '')
+    return { type: 'github', url: `https://github.com/${owner}/${cleanRepo}.git` }
   }
 
   // GitHub shorthand: owner/repo#branch or owner/repo/subpath
   const [cleanInput, fragmentRef] = extractBranchFragment(input)
-  const shorthand = cleanInput.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/);
+  const shorthand = cleanInput.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/)
   if (shorthand && !cleanInput.includes(':')) {
-    const [, owner, repo, subpath] = shorthand;
-    return { type: 'github', url: `https://github.com/${owner}/${repo}.git`, subpath, ref: fragmentRef };
+    const [, owner, repo, subpath] = shorthand
+    return {
+      type: 'github',
+      url: `https://github.com/${owner}/${repo}.git`,
+      subpath,
+      ref: fragmentRef,
+    }
   }
 
   // Fallback: treat as github
-  return { type: 'github', url: input };
+  return { type: 'github', url: input }
 }
 
 export function getOwnerRepo(parsed: ParsedSource): string | null {
-  if (parsed.type === 'local') return null;
+  if (parsed.type === 'local') return null
   try {
-    const url = new URL(parsed.url);
-    let path = url.pathname.slice(1).replace(/\.git$/, '');
-    return path.includes('/') ? path : null;
+    const url = new URL(parsed.url)
+    let path = url.pathname.slice(1).replace(/\.git$/, '')
+    return path.includes('/') ? path : null
   } catch {
-    return null;
+    return null
   }
 }

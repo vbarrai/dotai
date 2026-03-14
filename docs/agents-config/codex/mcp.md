@@ -32,28 +32,28 @@ disabled_tools = ["dangerous_tool"]             # Specific tools disabled
 
 ## Supported Transports
 
-| Type | Fields | Usage |
-|:-----|:-------|:------|
-| `stdio` | `command` + `args` + `env` | Local processes |
-| `streamable-http` | `http_url` or `url` | Remote servers |
+| Type              | Fields                     | Usage           |
+| :---------------- | :------------------------- | :-------------- |
+| `stdio`           | `command` + `args` + `env` | Local processes |
+| `streamable-http` | `http_url` or `url`        | Remote servers  |
 
 ## Per-Server Options
 
-| Option | Type | Description |
-|:-------|:-----|:------------|
-| `command` | string | stdio command |
-| `args` | string[] | Command arguments |
-| `env` | table | Environment variables |
-| `cwd` | string | Working directory |
-| `url` | string | SSE URL |
-| `http_url` | string | Streamable HTTP URL |
-| `bearer_token_env_var` | string | Env variable for Bearer token |
-| `http_headers` | table | Static HTTP headers |
-| `env_http_headers` | table | HTTP headers from env variables |
-| `startup_timeout_sec` | number | Startup timeout (default: 10s) |
-| `tool_timeout_sec` | number | Per-tool timeout (default: 60s) |
-| `enabled` | bool | Enable/disable the server |
-| `disabled_tools` | string[] | List of tools to disable |
+| Option                 | Type     | Description                     |
+| :--------------------- | :------- | :------------------------------ |
+| `command`              | string   | stdio command                   |
+| `args`                 | string[] | Command arguments               |
+| `env`                  | table    | Environment variables           |
+| `cwd`                  | string   | Working directory               |
+| `url`                  | string   | SSE URL                         |
+| `http_url`             | string   | Streamable HTTP URL             |
+| `bearer_token_env_var` | string   | Env variable for Bearer token   |
+| `http_headers`         | table    | Static HTTP headers             |
+| `env_http_headers`     | table    | HTTP headers from env variables |
+| `startup_timeout_sec`  | number   | Startup timeout (default: 10s)  |
+| `tool_timeout_sec`     | number   | Per-tool timeout (default: 60s) |
+| `enabled`              | bool     | Enable/disable the server       |
+| `disabled_tools`       | string[] | List of tools to disable        |
 
 ## CLI MCP
 

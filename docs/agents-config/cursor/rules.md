@@ -12,21 +12,21 @@ Rules are persistent instructions that the Cursor agent sees at the beginning of
 
 ### By scope
 
-| Type | Storage | Applies to |
-|:-----|:---------|:-------------|
-| **Project** | `.cursor/rules/*.mdc` | This repo only (versionable) |
-| **User** | Cursor Settings > Rules | All your projects |
-| **Team** | Team Dashboard | All team members |
-| **Agent (AGENTS.md)** | `AGENTS.md` at the repo root | This repo (plain markdown) |
+| Type                  | Storage                      | Applies to                   |
+| :-------------------- | :--------------------------- | :--------------------------- |
+| **Project**           | `.cursor/rules/*.mdc`        | This repo only (versionable) |
+| **User**              | Cursor Settings > Rules      | All your projects            |
+| **Team**              | Team Dashboard               | All team members             |
+| **Agent (AGENTS.md)** | `AGENTS.md` at the repo root | This repo (plain markdown)   |
 
 ### By activation mode
 
-| Type | Behavior | Use case |
-|:-----|:-------------|:------------|
-| **Always** | Always included in context | Core conventions, tech stack |
-| **Auto Attached** | Included when files match the `globs` pattern | Frontend-specific, backend-specific Rules, etc. |
-| **Agent Requested** | The AI decides whether to include it based on the `description` | Specialized knowledge on demand |
-| **Manual** | Included only when mentioned with `@ruleName` | Specific workflows invoked manually |
+| Type                | Behavior                                                        | Use case                                        |
+| :------------------ | :-------------------------------------------------------------- | :---------------------------------------------- |
+| **Always**          | Always included in context                                      | Core conventions, tech stack                    |
+| **Auto Attached**   | Included when files match the `globs` pattern                   | Frontend-specific, backend-specific Rules, etc. |
+| **Agent Requested** | The AI decides whether to include it based on the `description` | Specialized knowledge on demand                 |
+| **Manual**          | Included only when mentioned with `@ruleName`                   | Specific workflows invoked manually             |
 
 ## `.mdc` format
 
@@ -53,13 +53,14 @@ alwaysApply: false
 
 ### Frontmatter fields
 
-| Field | Description |
-|:------|:------------|
+| Field         | Description                                                                                |
+| :------------ | :----------------------------------------------------------------------------------------- |
 | `description` | Purpose of the rule. Used by the AI to decide whether to include it (Agent Requested mode) |
-| `globs` | Glob pattern for auto-attach. E.g.: `*.tsx`, `src/api/**/*.ts` |
-| `alwaysApply` | `true` = always included (Always mode) |
+| `globs`       | Glob pattern for auto-attach. E.g.: `*.tsx`, `src/api/**/*.ts`                             |
+| `alwaysApply` | `true` = always included (Always mode)                                                     |
 
 **Type determination**:
+
 - `alwaysApply: true` → **Always**
 - `globs` defined (without `alwaysApply`) → **Auto Attached**
 - Only `description` → **Agent Requested**
@@ -73,11 +74,13 @@ A simple alternative to `.mdc` files: an `AGENTS.md` file in plain markdown at t
 # Agent Instructions
 
 ## Tech Stack
+
 - TypeScript (ESM)
 - React 19
 - Tailwind CSS
 
 ## Conventions
+
 - No semicolons
 - Single quotes
 - Functional components only
@@ -177,14 +180,14 @@ description: Deployment process for staging and production.
 
 ## Rules vs Skills
 
-| Aspect | Rules | Skills |
-|:-------|:------|:-------|
-| **Nature** | Static context | Dynamic capabilities |
-| **Loading** | Beginning of each conversation | On demand, when relevant |
-| **Format** | `.mdc` (frontmatter + markdown) | `SKILL.md` (frontmatter + markdown + support files) |
-| **Content** | Conventions, standards, stack | Workflows, scripts, specialized knowledge |
-| **Context impact** | Consumes tokens permanently | Loaded only when activated |
-| **Usage** | Always active or auto-attached | Invoked by the agent or user |
+| Aspect             | Rules                           | Skills                                              |
+| :----------------- | :------------------------------ | :-------------------------------------------------- |
+| **Nature**         | Static context                  | Dynamic capabilities                                |
+| **Loading**        | Beginning of each conversation  | On demand, when relevant                            |
+| **Format**         | `.mdc` (frontmatter + markdown) | `SKILL.md` (frontmatter + markdown + support files) |
+| **Content**        | Conventions, standards, stack   | Workflows, scripts, specialized knowledge           |
+| **Context impact** | Consumes tokens permanently     | Loaded only when activated                          |
+| **Usage**          | Always active or auto-attached  | Invoked by the agent or user                        |
 
 **Simple rule**: use **Rules** for what the agent must **always know**, and **Skills** for what it must **know how to do on demand**.
 

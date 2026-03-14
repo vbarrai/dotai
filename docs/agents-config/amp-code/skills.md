@@ -8,20 +8,20 @@
 
 Amp supports the open Agent Skills standard with progressive disclosure:
 
-| Level | When Loaded | Content |
-|:------|:------------|:--------|
-| **Discovery** | At startup | `name` and `description` |
-| **Activation** | When relevant | Full SKILL.md body |
-| **Execution** | On demand | Scripts, resources |
+| Level          | When Loaded   | Content                  |
+| :------------- | :------------ | :----------------------- |
+| **Discovery**  | At startup    | `name` and `description` |
+| **Activation** | When relevant | Full SKILL.md body       |
+| **Execution**  | On demand     | Scripts, resources       |
 
 ## Locations
 
-| Scope | Path | Compatibility |
-|:------|:-----|:-------------|
-| Project | `.agents/skills/<name>/SKILL.md` | Standard |
-| User | `~/.config/agents/skills/<name>/SKILL.md` | Standard |
-| Project (compat) | `.claude/skills/<name>/SKILL.md` | Claude Code |
-| User (compat) | `~/.claude/skills/<name>/SKILL.md` | Claude Code |
+| Scope            | Path                                      | Compatibility |
+| :--------------- | :---------------------------------------- | :------------ |
+| Project          | `.agents/skills/<name>/SKILL.md`          | Standard      |
+| User             | `~/.config/agents/skills/<name>/SKILL.md` | Standard      |
+| Project (compat) | `.claude/skills/<name>/SKILL.md`          | Claude Code   |
+| User (compat)    | `~/.claude/skills/<name>/SKILL.md`        | Claude Code   |
 
 **Priority**: Project > User > Built-in.
 

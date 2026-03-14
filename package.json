@@ -14,7 +14,9 @@
     "build": "obuild",
     "dev": "node --experimental-strip-types src/cli.ts",
     "test": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prettier": "prettier --check .",
+    "prettier:format": "prettier --write ."
   },
   "devDependencies": {
     "@clack/prompts": "^0.11.0",
@@ -22,6 +24,7 @@
     "gray-matter": "^4.0.3",
     "obuild": "^0.4.22",
     "picocolors": "^1.1.1",
+    "prettier": "^3.8.1",
     "simple-git": "^3.27.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"

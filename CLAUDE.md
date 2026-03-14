@@ -14,6 +14,7 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - Tests: vitest
 - CLI prompts: @clack/prompts
 - Git operations: simple-git
+- Formatting: prettier
 
 ## Commands
 
@@ -22,6 +23,8 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - `pnpm build` — Build with obuild
 - `pnpm run type-check` — TypeScript type checking (`tsc --noEmit`)
 - `pnpm run dev` — Run CLI in dev mode (`node --experimental-strip-types src/cli.ts`)
+- `pnpm prettier` — Check formatting (CI)
+- `pnpm prettier:format` — Format all files with Prettier
 
 ## Project structure
 
@@ -135,44 +138,45 @@ All agent-specific documentation lives in `docs/agents-config/`. Use these docs 
 
 Files follow the pattern `docs/agents-config/[agent-name]/[feature-name].md`. Each file includes a maconfai support status banner.
 
-| Agent | skills | hooks | mcp | context | Other |
-|:------|:-------|:------|:----|:--------|:------|
-| **Claude Code** | Supported | Not supported | Not supported | Not supported | `sub-agents.md` |
-| **Cursor** | Supported | Not supported | Not supported | Not supported | `rules.md` |
-| **Codex** | Supported | Not supported | Not supported | Not supported | — |
-| **Gemini CLI** | Not supported | — | Not supported | Not supported | — |
-| **Amp Code** | Not supported | — | Not supported | Not supported | — |
+| Agent           | skills        | hooks         | mcp           | context       | Other           |
+| :-------------- | :------------ | :------------ | :------------ | :------------ | :-------------- |
+| **Claude Code** | Supported     | Not supported | Not supported | Not supported | `sub-agents.md` |
+| **Cursor**      | Supported     | Not supported | Not supported | Not supported | `rules.md`      |
+| **Codex**       | Supported     | Not supported | Not supported | Not supported | —               |
+| **Gemini CLI**  | Not supported | —             | Not supported | Not supported | —               |
+| **Amp Code**    | Not supported | —             | Not supported | Not supported | —               |
 
 ### Agent skills directory mapping
 
-| Agent | Project skills dir | User skills dir | Canonical dir |
-|:------|:-------------------|:----------------|:--------------|
-| Claude Code | `.claude/skills/<name>/` | `~/.claude/skills/<name>/` | `.agents/skills/<name>/` |
-| Cursor | `.cursor/skills/<name>/` | `~/.cursor/skills/<name>/` | `.agents/skills/<name>/` |
-| Codex | `.agents/skills/<name>/` | `~/.codex/skills/<name>/` | `.agents/skills/<name>/` |
-| Gemini CLI | `.gemini/skills/<name>/` | `~/.gemini/skills/<name>/` | `.agents/skills/<name>/` |
-| Amp Code | `.agents/skills/<name>/` | `~/.config/agents/skills/<name>/` | `.agents/skills/<name>/` |
+| Agent       | Project skills dir       | User skills dir                   | Canonical dir            |
+| :---------- | :----------------------- | :-------------------------------- | :----------------------- |
+| Claude Code | `.claude/skills/<name>/` | `~/.claude/skills/<name>/`        | `.agents/skills/<name>/` |
+| Cursor      | `.cursor/skills/<name>/` | `~/.cursor/skills/<name>/`        | `.agents/skills/<name>/` |
+| Codex       | `.agents/skills/<name>/` | `~/.codex/skills/<name>/`         | `.agents/skills/<name>/` |
+| Gemini CLI  | `.gemini/skills/<name>/` | `~/.gemini/skills/<name>/`        | `.agents/skills/<name>/` |
+| Amp Code    | `.agents/skills/<name>/` | `~/.config/agents/skills/<name>/` | `.agents/skills/<name>/` |
 
 ### Agent instruction files
 
-| Agent | Instruction file | Config file | Config format |
-|:------|:----------------|:------------|:-------------|
-| Claude Code | `CLAUDE.md` | `settings.json` | JSON |
-| Cursor | `.cursor/rules/*.mdc` + `AGENTS.md` | Settings UI | — |
-| Codex | `AGENTS.md` (+ `AGENTS.override.md`) | `config.toml` | TOML |
-| Gemini CLI | `GEMINI.md` (configurable name) | `settings.json` | JSON |
-| Amp Code | `AGENTS.md` (fallback `CLAUDE.md`) | `settings.json` | JSON |
+| Agent       | Instruction file                     | Config file     | Config format |
+| :---------- | :----------------------------------- | :-------------- | :------------ |
+| Claude Code | `CLAUDE.md`                          | `settings.json` | JSON          |
+| Cursor      | `.cursor/rules/*.mdc` + `AGENTS.md`  | Settings UI     | —             |
+| Codex       | `AGENTS.md` (+ `AGENTS.override.md`) | `config.toml`   | TOML          |
+| Gemini CLI  | `GEMINI.md` (configurable name)      | `settings.json` | JSON          |
+| Amp Code    | `AGENTS.md` (fallback `CLAUDE.md`)   | `settings.json` | JSON          |
 
 ### SKILL.md frontmatter (universal)
 
 ```yaml
 ---
-name: skill-name          # Required — identifier
-description: What it does  # Required — triggers implicit invocation
+name: skill-name # Required — identifier
+description: What it does # Required — triggers implicit invocation
 ---
 ```
 
 Agent-specific extras:
+
 - **Codex**: `agents/openai.yaml` (interface, policy.allow_implicit_invocation, dependencies.tools)
 - **Claude Code**: frontmatter supports `version`, `mode`, `disable-model-invocation`, `allowed-tools`
 - **Gemini CLI**: only `name` + `description` recognized (no agents/google.yaml)

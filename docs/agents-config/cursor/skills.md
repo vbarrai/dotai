@@ -21,7 +21,6 @@ The format is the same open standard as for Claude Code:
 name: my-skill
 description: What the skill does and when to use it.
 ---
-
 # Instructions
 
 1. First step
@@ -31,17 +30,17 @@ description: What the skill does and when to use it.
 
 ### Frontmatter fields
 
-| Field | Description |
-|:------|:------------|
-| `name` | Skill name (lowercase, digits, hyphens). Max 64 chars. |
+| Field         | Description                                                       |
+| :------------ | :---------------------------------------------------------------- |
+| `name`        | Skill name (lowercase, digits, hyphens). Max 64 chars.            |
 | `description` | What the Skill does and when to use it. Required. Max 1024 chars. |
 
 ## Where to store Skills
 
-| Scope | Path |
-|:-------|:-------|
-| Project | `.cursor/skills/<name>/SKILL.md` |
-| User | `~/.cursor/skills/<name>/SKILL.md` |
+| Scope   | Path                               |
+| :------ | :--------------------------------- |
+| Project | `.cursor/skills/<name>/SKILL.md`   |
+| User    | `~/.cursor/skills/<name>/SKILL.md` |
 
 ## Skill structure
 
@@ -68,6 +67,7 @@ my-skill/
 Skills in Cursor can include:
 
 ### Custom commands
+
 Reusable workflows invocable with `/`:
 
 ```yaml
@@ -75,16 +75,17 @@ Reusable workflows invocable with `/`:
 name: deploy
 description: Deploy the application to production
 ---
-
 1. Run the tests
 2. Build the application
 3. Push to the deployment target
 ```
 
 ### Hooks
+
 Scripts that run before or after agent actions.
 
 ### Specialized knowledge
+
 Instructions for domain-specific tasks.
 
 ## Full example
@@ -95,18 +96,18 @@ name: create-component
 description: Creates a React component with tests and stories.
   Use when asked to create a new UI component.
 ---
-
 # React Component Creation
 
 ## Structure to create
-
 ```
+
 src/components/<ComponentName>/
 ├── <ComponentName>.tsx
 ├── <ComponentName>.test.tsx
 ├── <ComponentName>.stories.tsx
 └── index.ts
-```
+
+````
 
 ## Conventions
 
@@ -128,7 +129,8 @@ interface ${name}Props {
 export const ${name}: FC<${name}Props> = (props) => {
   return <div>...</div>
 }
-```
+````
+
 ```
 
 ## Best practices
@@ -168,3 +170,4 @@ In case of a **contradiction** between a Rule and a Skill, the **Rule wins**. Th
 - [Agent Best Practices — Cursor Blog](https://cursor.com/blog/agent-best-practices)
 - [Agent Skills Open Standard](https://agentskills.io)
 - [How to use Agent Skills in Cursor? — Cursor Forum](https://forum.cursor.com/t/how-to-use-agent-skills-in-cursor-ide/149860)
+```
