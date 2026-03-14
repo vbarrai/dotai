@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { existsSync } from 'fs';
 import { parseSource, getOwnerRepo } from './source-parser.ts';
 import { cloneRepo, cleanupTempDir } from './git.ts';
-import { discoverSkills } from './skills.ts';
+import { discoverSkills, discoverMcpServers } from './skills.ts';
 import {
   installSkill,
   uninstallSkill,
@@ -11,7 +11,7 @@ import {
 } from './installer.ts';
 import { agents, detectInstalledAgents } from './agents.ts';
 import { readLock, removeFromLock } from './lock.ts';
-import { listInstalledMcpServerNames } from './mcp.ts';
+import { installMcpServers, listInstalledMcpServerNames } from './mcp.ts';
 import type { Skill, AgentType, McpServerConfig } from './types.ts';
 
 const ALL_AGENTS: AgentType[] = ['claude-code', 'cursor', 'codex'];
@@ -84,18 +84,23 @@ export async function runInstall(args: string[]): Promise<void> {
       spinner.stop('Repository cloned');
     }
 
-    // Discover skills (only from ./skills directory)
-    spinner.start('Discovering skills...');
+    // Discover skills and MCP servers
+    spinner.start('Discovering skills and MCP servers...');
     const skills = await discoverSkills(skillsDir);
+    const rootMcpServers = await discoverMcpServers(skillsDir);
+    const hasRootMcp = Object.keys(rootMcpServers).length > 0;
 
-    if (skills.length === 0) {
-      spinner.stop(pc.red('No skills found'));
-      p.log.error('No skills found. Skills must be in a ./skills directory with a SKILL.md file.');
+    if (skills.length === 0 && !hasRootMcp) {
+      spinner.stop(pc.red('Nothing found'));
+      p.log.error('No skills or MCP servers found.');
       await cleanup(tempDir);
       process.exit(1);
     }
 
-    spinner.stop(`Found ${pc.green(String(skills.length))} skill(s)`);
+    const parts: string[] = [];
+    if (skills.length > 0) parts.push(`${skills.length} skill(s)`);
+    if (hasRootMcp) parts.push(`${Object.keys(rootMcpServers).length} MCP server(s)`);
+    spinner.stop(`Found ${pc.green(parts.join(' + '))}`);
 
     // Check which skills are already installed
     const installed = await listInstalledSkills({ global: false });
@@ -105,7 +110,9 @@ export async function runInstall(args: string[]): Promise<void> {
     let selectedSkills: Skill[];
     let allSkills = skills;
 
-    if (argSkills) {
+    if (skills.length === 0) {
+      selectedSkills = [];
+    } else if (argSkills) {
       selectedSkills = skills.filter((s) => argSkills.includes(s.name));
     } else if (skills.length === 1 || skipPrompts) {
       selectedSkills = skills;
@@ -134,15 +141,18 @@ export async function runInstall(args: string[]): Promise<void> {
       selectedSkills = selected as Skill[];
     }
 
-    // Collect MCP servers from selected skills
-    interface McpEntry { serverName: string; skillName: string; config: McpServerConfig }
+    // Collect MCP servers from selected skills + root mcp.json
+    interface McpEntry { serverName: string; source: string; config: McpServerConfig }
     const allMcpEntries: McpEntry[] = [];
     for (const skill of selectedSkills) {
       if (skill.mcpServers) {
         for (const [serverName, config] of Object.entries(skill.mcpServers)) {
-          allMcpEntries.push({ serverName, skillName: skill.name, config });
+          allMcpEntries.push({ serverName, source: skill.name, config });
         }
       }
+    }
+    for (const [serverName, config] of Object.entries(rootMcpServers)) {
+      allMcpEntries.push({ serverName, source: 'mcp.json', config });
     }
 
     // Select MCP servers
@@ -158,7 +168,7 @@ export async function runInstall(args: string[]): Promise<void> {
 
         const mcpChoices = allMcpEntries.map((e) => ({
           value: e.serverName,
-          label: `${e.serverName} ${pc.dim(`(from: ${e.skillName})`)}`,
+          label: `${e.serverName} ${pc.dim(`(from: ${e.source})`)}`,
         }));
 
         const initialMcpValues = allMcpEntries
@@ -186,8 +196,8 @@ export async function runInstall(args: string[]): Promise<void> {
     const mcpBySkill = new Map<string, Record<string, McpServerConfig>>();
     for (const entry of allMcpEntries) {
       if (selectedMcpNames.has(entry.serverName)) {
-        if (!mcpBySkill.has(entry.skillName)) mcpBySkill.set(entry.skillName, {});
-        mcpBySkill.get(entry.skillName)![entry.serverName] = entry.config;
+        if (!mcpBySkill.has(entry.source)) mcpBySkill.set(entry.source, {});
+        mcpBySkill.get(entry.source)![entry.serverName] = entry.config;
       }
     }
 
@@ -247,7 +257,16 @@ export async function runInstall(args: string[]): Promise<void> {
       (s) => installedNames.has(s.name) && !selectedNames.has(s.name)
     );
 
-    if (toInstall.length === 0 && toUninstall.length === 0 && removedAgents.length === 0) {
+    // Build standalone MCP map (root-level, not tied to any skill)
+    const standaloneMcps: Record<string, McpServerConfig> = {};
+    for (const entry of allMcpEntries) {
+      if (entry.source === 'mcp.json' && selectedMcpNames.has(entry.serverName)) {
+        standaloneMcps[entry.serverName] = entry.config;
+      }
+    }
+    const hasStandaloneMcps = Object.keys(standaloneMcps).length > 0;
+
+    if (toInstall.length === 0 && toUninstall.length === 0 && removedAgents.length === 0 && !hasStandaloneMcps) {
       p.log.info('Nothing to do.');
       await cleanup(tempDir);
       p.outro('');
@@ -334,6 +353,15 @@ export async function runInstall(args: string[]): Promise<void> {
       if (failCount > 0) {
         p.log.error(pc.red(`Failed: ${failCount}`));
       }
+    }
+
+    // Install standalone MCP servers (from root mcp.json)
+    if (hasStandaloneMcps) {
+      spinner.start('Installing MCP servers...');
+      for (const agent of targetAgents) {
+        await installMcpServers(standaloneMcps, agent);
+      }
+      spinner.stop(`Installed ${Object.keys(standaloneMcps).length} MCP server(s)`);
     }
   } catch (error) {
     spinner.stop(pc.red('Error'));
