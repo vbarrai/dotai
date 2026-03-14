@@ -48,11 +48,11 @@ Project-level configuration, committable to the repo:
 
 ## Transport types
 
-| Type | Configuration | Usage |
-|:-----|:-------------|:------|
-| `stdio` | `command` + `args` | Local processes (Node.js, Python) |
-| `sse` | `url` | Remote servers (Server-Sent Events) |
-| `streamable-http` | `url` | Remote servers (HTTP streaming, recommended) |
+| Type              | Configuration      | Usage                                        |
+| :---------------- | :----------------- | :------------------------------------------- |
+| `stdio`           | `command` + `args` | Local processes (Node.js, Python)            |
+| `sse`             | `url`              | Remote servers (Server-Sent Events)          |
+| `streamable-http` | `url`              | Remote servers (HTTP streaming, recommended) |
 
 **Recommendation**: `stdio` for local experimentation, `streamable-http` for everything else.
 
@@ -183,16 +183,16 @@ Beyond **~40 MCP tools** loaded simultaneously, the agent loses accuracy. Unlike
 
 ## Comparison with Claude Code
 
-| Aspect | Cursor | Claude Code |
-|:-------|:-------|:------------|
-| **Configuration** | Settings UI or `.cursor/mcp.json` | `.mcp.json`, settings.json |
-| **Scopes** | Global, project | User, project, managed policy |
-| **Management UI** | Built-in settings | `/mcp` menu |
-| **Approval** | Dialog + auto-approve | Permissions system |
-| **Hooks on MCP** | No | Yes (`mcp__*` matchers) |
-| **Transports** | stdio, sse, streamable-http | stdio, http (streamable) |
-| **Tool limit** | ~40 (all loaded at startup) | No hard limit (lazy loading) |
-| **Dual role** | MCP client only | MCP client AND server |
+| Aspect            | Cursor                            | Claude Code                   |
+| :---------------- | :-------------------------------- | :---------------------------- |
+| **Configuration** | Settings UI or `.cursor/mcp.json` | `.mcp.json`, settings.json    |
+| **Scopes**        | Global, project                   | User, project, managed policy |
+| **Management UI** | Built-in settings                 | `/mcp` menu                   |
+| **Approval**      | Dialog + auto-approve             | Permissions system            |
+| **Hooks on MCP**  | No                                | Yes (`mcp__*` matchers)       |
+| **Transports**    | stdio, sse, streamable-http       | stdio, http (streamable)      |
+| **Tool limit**    | ~40 (all loaded at startup)       | No hard limit (lazy loading)  |
+| **Dual role**     | MCP client only                   | MCP client AND server         |
 
 ## Common pitfalls
 

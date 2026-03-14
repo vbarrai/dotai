@@ -8,18 +8,18 @@
 
 Gemini CLI supports the open Agent Skills standard with progressive disclosure:
 
-| Level | When Loaded | Content |
-|:------|:------------|:--------|
-| **Discovery** | At startup | `name` and `description` only |
-| **Activation** | When relevant (via `activate_skill`) | Full SKILL.md body |
-| **Execution** | On demand | Scripts, resources, assets |
+| Level          | When Loaded                          | Content                       |
+| :------------- | :----------------------------------- | :---------------------------- |
+| **Discovery**  | At startup                           | `name` and `description` only |
+| **Activation** | When relevant (via `activate_skill`) | Full SKILL.md body            |
+| **Execution**  | On demand                            | Scripts, resources, assets    |
 
 ## Locations
 
-| Scope | Path | Alias |
-|:------|:-----|:------|
-| Project | `.gemini/skills/<name>/SKILL.md` | `.agents/skills/<name>/SKILL.md` |
-| User | `~/.gemini/skills/<name>/SKILL.md` | `~/.agents/skills/<name>/SKILL.md` |
+| Scope   | Path                               | Alias                              |
+| :------ | :--------------------------------- | :--------------------------------- |
+| Project | `.gemini/skills/<name>/SKILL.md`   | `.agents/skills/<name>/SKILL.md`   |
+| User    | `~/.gemini/skills/<name>/SKILL.md` | `~/.agents/skills/<name>/SKILL.md` |
 
 **Priority**: Project > User > Extension. The `.agents/skills/` alias takes priority over `.gemini/skills/` within the same tier.
 
@@ -32,7 +32,6 @@ Gemini CLI supports the open Agent Skills standard with progressive disclosure:
 name: my-skill
 description: What the skill does and when to use it.
 ---
-
 Instructions for the agent...
 ```
 

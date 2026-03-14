@@ -10,9 +10,9 @@
 
 ## Location and Loading
 
-| Scope | Path |
-|:------|:-----|
-| Project root | `AGENTS.md` |
+| Scope        | Path                                            |
+| :----------- | :---------------------------------------------- |
+| Project root | `AGENTS.md`                                     |
 | Subdirectory | `frontend/AGENTS.md`, `backend/AGENTS.md`, etc. |
 
 Cursor supports nested `AGENTS.md` files in subdirectories, allowing directory-specific instructions. Files placed deeper in the hierarchy take precedence over parent directory versions.
@@ -49,6 +49,7 @@ Unlike `.mdc` rule files with frontmatter, `AGENTS.md` is free-form markdown wit
 `AGENTS.md` functions as part of the **Project Rules** category, applied alongside `.mdc` files in `.cursor/rules/`.
 
 **Precedence** (highest to lowest):
+
 1. Team Rules
 2. Project Rules (`.cursor/rules/*.mdc` + `AGENTS.md`)
 3. User Rules
@@ -59,12 +60,12 @@ Instructions from `AGENTS.md` apply to **Agent (Chat) mode only** — not to Inl
 
 ## When to Use AGENTS.md vs Rules
 
-| Need | Solution |
-|:-----|:---------|
-| Simple, readable project instructions | **AGENTS.md** |
-| File-pattern scoped conventions | **Rules** (`.mdc` with `globs`) |
-| Always-active constraints | **Rules** (`.mdc` with `alwaysApply`) |
-| Agent-decided dynamic loading | **Rules** (`.mdc` with `description`) |
+| Need                                  | Solution                              |
+| :------------------------------------ | :------------------------------------ |
+| Simple, readable project instructions | **AGENTS.md**                         |
+| File-pattern scoped conventions       | **Rules** (`.mdc` with `globs`)       |
+| Always-active constraints             | **Rules** (`.mdc` with `alwaysApply`) |
+| Agent-decided dynamic loading         | **Rules** (`.mdc` with `description`) |
 
 ## Sources
 

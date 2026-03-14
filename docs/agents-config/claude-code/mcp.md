@@ -10,11 +10,11 @@ The **Model Context Protocol** (MCP) is an open protocol that allows Claude Code
 
 ## Transport Types
 
-| Type | Description | Typical usage |
-|:-----|:-----------|:-------------|
-| `stdio` | Communication via stdin/stdout | Local processes (Node.js, Python) |
-| `sse` | Server-Sent Events via HTTP | Remote servers (legacy) |
-| `streamable-http` | Bidirectional HTTP streaming | Remote servers (recommended) |
+| Type              | Description                    | Typical usage                     |
+| :---------------- | :----------------------------- | :-------------------------------- |
+| `stdio`           | Communication via stdin/stdout | Local processes (Node.js, Python) |
+| `sse`             | Server-Sent Events via HTTP    | Remote servers (legacy)           |
+| `streamable-http` | Bidirectional HTTP streaming   | Remote servers (recommended)      |
 
 ## Configuration
 
@@ -70,21 +70,21 @@ For global MCP servers available across all projects:
 
 ## Configuration Fields
 
-| Field | Required | Description |
-|:------|:---------|:------------|
-| `command` | Yes (stdio) | Command to launch the server |
-| `args` | No | Command arguments |
-| `env` | No | Environment variables |
-| `url` | Yes (sse/http) | Remote server URL |
-| `headers` | No | HTTP headers for remote servers |
+| Field     | Required       | Description                     |
+| :-------- | :------------- | :------------------------------ |
+| `command` | Yes (stdio)    | Command to launch the server    |
+| `args`    | No             | Command arguments               |
+| `env`     | No             | Environment variables           |
+| `url`     | Yes (sse/http) | Remote server URL               |
+| `headers` | No             | HTTP headers for remote servers |
 
 ## Scopes
 
-| Scope | Storage | Access | Shareable |
-|:------|:--------|:-------|:----------|
-| **Local** (default) | `~/.claude.json` (under the project path) | You, this project | No |
-| **Project** | `.mcp.json` (project root) | The team, this project | Yes (committable) |
-| **User** | `~/.claude.json` (global) | You, all projects | No |
+| Scope               | Storage                                   | Access                 | Shareable         |
+| :------------------ | :---------------------------------------- | :--------------------- | :---------------- |
+| **Local** (default) | `~/.claude.json` (under the project path) | You, this project      | No                |
+| **Project**         | `.mcp.json` (project root)                | The team, this project | Yes (committable) |
+| **User**            | `~/.claude.json` (global)                 | You, all projects      | No                |
 
 **Priority**: Local > Project > User.
 
@@ -144,6 +144,7 @@ Use the `${VAR}` syntax to avoid hardcoding secrets:
 ```
 
 Supported syntax:
+
 - `${VAR}` — variable value
 - `${VAR:-default}` — default value if undefined
 
@@ -251,9 +252,7 @@ You can target them in hooks:
     "PreToolUse": [
       {
         "matcher": "mcp__.*__write.*",
-        "hooks": [
-          { "type": "command", "command": "validate-mcp-write.sh" }
-        ]
+        "hooks": [{ "type": "command", "command": "validate-mcp-write.sh" }]
       }
     ]
   }

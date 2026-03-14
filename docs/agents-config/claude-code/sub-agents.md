@@ -10,11 +10,11 @@ A sub-agent is an autonomous Claude instance that runs in an isolated context, w
 
 ## Built-in Sub-agent Types
 
-| Agent | Description | Available tools |
-|:------|:-----------|:----------------|
-| `Explore` | Fast codebase exploration | Read, Grep, Glob, WebFetch, WebSearch |
-| `Plan` | Software architect, plan design | Read, Grep, Glob, WebFetch, WebSearch |
-| `general-purpose` | Versatile agent for complex tasks | All tools |
+| Agent             | Description                       | Available tools                       |
+| :---------------- | :-------------------------------- | :------------------------------------ |
+| `Explore`         | Fast codebase exploration         | Read, Grep, Glob, WebFetch, WebSearch |
+| `Plan`            | Software architect, plan design   | Read, Grep, Glob, WebFetch, WebSearch |
+| `general-purpose` | Versatile agent for complex tasks | All tools                             |
 
 ## Creating a Custom Sub-agent
 
@@ -62,14 +62,14 @@ For each vulnerability found:
 
 ### Frontmatter Fields
 
-| Field | Required | Description |
-|:------|:---------|:------------|
-| `name` | No | Agent name (default: filename) |
-| `description` | Recommended | What the agent does and when to use it |
-| `allowed-tools` | No | Tools allowed without asking permission |
-| `model` | No | Model to use |
-| `hooks` | No | Hooks specific to the agent's lifecycle |
-| `context` | No | `fork` to isolate in a sub-agent |
+| Field           | Required    | Description                             |
+| :-------------- | :---------- | :-------------------------------------- |
+| `name`          | No          | Agent name (default: filename)          |
+| `description`   | Recommended | What the agent does and when to use it  |
+| `allowed-tools` | No          | Tools allowed without asking permission |
+| `model`         | No          | Model to use                            |
+| `hooks`         | No          | Hooks specific to the agent's lifecycle |
+| `context`       | No          | `fork` to isolate in a sub-agent        |
 
 ## Invoking a Sub-agent
 
@@ -82,7 +82,6 @@ description: In-depth research on a topic
 context: fork
 agent: Explore
 ---
-
 Research $ARGUMENTS in depth.
 Find relevant files and summarize the results.
 ```
@@ -162,16 +161,15 @@ description: Manages application deployment
 allowed-tools: Bash, Read
 hooks:
   PreToolUse:
-    - matcher: "Bash"
+    - matcher: 'Bash'
       hooks:
         - type: command
-          command: "./scripts/validate-deploy-command.sh"
+          command: './scripts/validate-deploy-command.sh'
   Stop:
     - hooks:
         - type: command
-          command: "./scripts/post-deploy-check.sh"
+          command: './scripts/post-deploy-check.sh'
 ---
-
 # Deployment Agent
 
 You manage the application deployment...
@@ -189,11 +187,11 @@ The lead agent can delegate sub-tasks to other agents that work simultaneously o
 
 ### Team Hooks
 
-| Hook | Description |
-|:-----|:------------|
-| `TeammateIdle` | When a teammate is about to go idle |
+| Hook             | Description                             |
+| :--------------- | :-------------------------------------- |
+| `TeammateIdle`   | When a teammate is about to go idle     |
 | `WorktreeCreate` | When a worktree is created for an agent |
-| `WorktreeRemove` | When a worktree is removed |
+| `WorktreeRemove` | When a worktree is removed              |
 
 ## Isolation with Worktrees
 
@@ -206,7 +204,6 @@ description: Module refactoring in an isolated worktree
 context: fork
 agent: general-purpose
 ---
-
 Refactor the module $ARGUMENTS...
 ```
 
@@ -216,12 +213,12 @@ The worktree is automatically cleaned up if the agent makes no changes. If chang
 
 ### Choosing the Right Agent Type
 
-| Need | Recommended agent |
-|:-----|:-----------------|
-| Quick code search | `Explore` |
-| Architecture planning | `Plan` |
-| Complex task with tools | `general-purpose` |
-| Domain-specific workflow | Custom agent |
+| Need                     | Recommended agent |
+| :----------------------- | :---------------- |
+| Quick code search        | `Explore`         |
+| Architecture planning    | `Plan`            |
+| Complex task with tools  | `general-purpose` |
+| Domain-specific workflow | Custom agent      |
 
 ### Writing the Prompt
 

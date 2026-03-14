@@ -34,10 +34,10 @@ Files are concatenated from root to current directory. Each block appears as a m
 
 A temporary override file that replaces `AGENTS.md` at any scope level without deleting the original. Remove the override file to restore shared instructions.
 
-| File | Priority | Usage |
-|:-----|:---------|:------|
-| `AGENTS.override.md` | High | Temporary override (release freeze, incident) |
-| `AGENTS.md` | Normal | Permanent instructions |
+| File                 | Priority | Usage                                         |
+| :------------------- | :------- | :-------------------------------------------- |
+| `AGENTS.override.md` | High     | Temporary override (release freeze, incident) |
+| `AGENTS.md`          | Normal   | Permanent instructions                        |
 
 ## Size Limits
 

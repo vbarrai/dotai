@@ -28,30 +28,30 @@
 
 ## Supported Transports
 
-| Type | Field | Usage |
-|:-----|:------|:------|
-| `stdio` | `command` + `args` + `env` | Local processes |
-| `sse` | `url` | Remote servers (SSE) |
-| `streamable-http` | `httpUrl` | Remote servers (recommended) |
+| Type              | Field                      | Usage                        |
+| :---------------- | :------------------------- | :--------------------------- |
+| `stdio`           | `command` + `args` + `env` | Local processes              |
+| `sse`             | `url`                      | Remote servers (SSE)         |
+| `streamable-http` | `httpUrl`                  | Remote servers (recommended) |
 
 **Priority** if multiple transports are specified: `httpUrl` > `url` > `command`.
 
 ## Per-Server Options
 
-| Key | Type | Description |
-|:----|:-----|:------------|
-| `command` | string | Command to start the stdio server |
-| `args` | string[] | Command arguments |
-| `env` | object | Process environment variables |
-| `cwd` | string | Working directory |
-| `url` | string | SSE server URL |
-| `httpUrl` | string | Streamable HTTP server URL |
-| `headers` | object | HTTP headers for `url`/`httpUrl` |
-| `timeout` | number | Timeout in milliseconds |
-| `trust` | bool | Trust — bypass tool call confirmations |
-| `description` | string | Server description |
+| Key            | Type     | Description                                                   |
+| :------------- | :------- | :------------------------------------------------------------ |
+| `command`      | string   | Command to start the stdio server                             |
+| `args`         | string[] | Command arguments                                             |
+| `env`          | object   | Process environment variables                                 |
+| `cwd`          | string   | Working directory                                             |
+| `url`          | string   | SSE server URL                                                |
+| `httpUrl`      | string   | Streamable HTTP server URL                                    |
+| `headers`      | object   | HTTP headers for `url`/`httpUrl`                              |
+| `timeout`      | number   | Timeout in milliseconds                                       |
+| `trust`        | bool     | Trust — bypass tool call confirmations                        |
+| `description`  | string   | Server description                                            |
 | `includeTools` | string[] | Tool allowlist (if specified, only these tools are available) |
-| `excludeTools` | string[] | Tool blocklist |
+| `excludeTools` | string[] | Tool blocklist                                                |
 
 ## Trust
 
@@ -94,11 +94,11 @@ gemini mcp remove    # Remove a server
 }
 ```
 
-| Key | Type | Description |
-|:----|:-----|:------------|
-| `allowed` | string[] | Allowlist of authorized MCP servers |
-| `excluded` | string[] | Blocklist of excluded MCP servers |
-| `serverCommand` | string | Global command to start an MCP server |
+| Key             | Type     | Description                           |
+| :-------------- | :------- | :------------------------------------ |
+| `allowed`       | string[] | Allowlist of authorized MCP servers   |
+| `excluded`      | string[] | Blocklist of excluded MCP servers     |
+| `serverCommand` | string   | Global command to start an MCP server |
 
 ## Sources
 

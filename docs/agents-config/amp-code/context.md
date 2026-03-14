@@ -10,16 +10,17 @@
 
 ## Locations and Discovery
 
-| Scope | Path | Loading |
-|:------|:-----|:--------|
-| Current directory + ancestors | `AGENTS.md` (up to `$HOME`) | Always included |
-| Subtree | `packages/frontend/AGENTS.md` | Included when the agent reads files in that subtree |
-| User | `~/.config/amp/AGENTS.md` | Always included |
-| User (alt) | `~/.config/AGENTS.md` | Always included |
+| Scope                         | Path                          | Loading                                             |
+| :---------------------------- | :---------------------------- | :-------------------------------------------------- |
+| Current directory + ancestors | `AGENTS.md` (up to `$HOME`)   | Always included                                     |
+| Subtree                       | `packages/frontend/AGENTS.md` | Included when the agent reads files in that subtree |
+| User                          | `~/.config/amp/AGENTS.md`     | Always included                                     |
+| User (alt)                    | `~/.config/AGENTS.md`         | Always included                                     |
 
 ## Fallback File Names
 
 If no `AGENTS.md` exists, Amp looks for:
+
 1. `AGENT.md` (without the S)
 2. `CLAUDE.md`
 
@@ -35,7 +36,6 @@ globs:
   - '**/*.ts'
   - '**/*.tsx'
 ---
-
 # TypeScript Conventions
 
 - No `any` — use `unknown`
@@ -49,10 +49,11 @@ Files with glob specifications are only loaded when Amp has accessed matching fi
 Reference other files within AGENTS.md:
 
 ```markdown
-See @doc/style.md and @specs/**/*.md
+See @doc/style.md and @specs/\*_/_.md
 ```
 
 Supported formats:
+
 - Relative paths (resolved from the AGENTS.md location)
 - Absolute paths and `@~/some/path`
 - Glob patterns like `@doc/*.md`

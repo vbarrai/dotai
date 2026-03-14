@@ -37,6 +37,7 @@ node --experimental-strip-types ../../../src/cli.ts install ../../providers/full
 ```
 
 Expected prompts:
+
 1. **Select skills** — toggle with space: `api-helper`, `doc-writer`, `deploy-assistant`
 2. **Select MCP servers** — toggle with space: `github`, `filesystem`, `brave-search`
 3. **Select agents** — toggle with space: `Claude Code`, `Cursor`, `Codex`
@@ -63,6 +64,7 @@ node --experimental-strip-types ../../../src/cli.ts install ../../providers/mult
 ```
 
 Expected prompts:
+
 1. **Select skills** — `code-review`, `test-helper`, `db-assistant`
 2. **Select MCP servers** — `postgres` (only if `db-assistant` is selected)
 3. **Select agents**
@@ -207,6 +209,7 @@ node --experimental-strip-types ../../../src/cli.ts install
 ```
 
 Expected prompts:
+
 1. Lists installed skills with their agents
 2. Select skills to remove
 3. Confirm removal

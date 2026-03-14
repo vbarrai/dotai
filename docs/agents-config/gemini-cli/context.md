@@ -10,12 +10,12 @@
 
 ## Locations and Discovery Order
 
-| Scope | Path | Loading |
-|:------|:-----|:--------|
-| System | `/etc/gemini-cli/GEMINI.md` | At startup (highest priority) |
-| User | `~/.gemini/GEMINI.md` | At startup |
-| Project/Ancestor | Walked up from the current directory | At startup |
-| Subdirectory | Auto-discovered in accessed directories | On demand (just-in-time) |
+| Scope            | Path                                    | Loading                       |
+| :--------------- | :-------------------------------------- | :---------------------------- |
+| System           | `/etc/gemini-cli/GEMINI.md`             | At startup (highest priority) |
+| User             | `~/.gemini/GEMINI.md`                   | At startup                    |
+| Project/Ancestor | Walked up from the current directory    | At startup                    |
+| Subdirectory     | Auto-discovered in accessed directories | On demand (just-in-time)      |
 
 ### On-demand discovery
 

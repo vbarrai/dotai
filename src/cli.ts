@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { runInstall } from './install.ts';
-import { runCheck } from './check.ts';
+import { runInstall } from './install.ts'
+import { runCheck } from './check.ts'
 
-const RESET = '\x1b[0m';
-const BOLD = '\x1b[1m';
-const DIM = '\x1b[38;5;102m';
-const TEXT = '\x1b[38;5;145m';
+const RESET = '\x1b[0m'
+const BOLD = '\x1b[1m'
+const DIM = '\x1b[38;5;102m'
+const TEXT = '\x1b[38;5;145m'
 
 function showHelp(): void {
   console.log(`
@@ -39,42 +39,42 @@ ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} npx maconfai install owner/repo
   ${DIM}$${RESET} maconfai install                              ${DIM}# uninstall mode${RESET}
   ${DIM}$${RESET} maconfai check
-`);
+`)
 }
 
 async function main(): Promise<void> {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(2)
 
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    showHelp();
-    return;
+    showHelp()
+    return
   }
 
-  const command = args[0]!;
-  const restArgs = args.slice(1);
+  const command = args[0]!
+  const restArgs = args.slice(1)
 
   switch (command) {
     case 'install':
     case 'i':
     case 'add':
     case 'a':
-      await runInstall(restArgs);
-      break;
+      await runInstall(restArgs)
+      break
 
     case 'check':
     case 'update':
-      await runCheck();
-      break;
+      await runCheck()
+      break
 
     case '--version':
     case '-v':
-      console.log('0.1.0');
-      break;
+      console.log('0.1.0')
+      break
 
     default:
-      console.log(`Unknown command: ${command}`);
-      console.log(`Run ${BOLD}maconfai --help${RESET} for usage.`);
+      console.log(`Unknown command: ${command}`)
+      console.log(`Run ${BOLD}maconfai --help${RESET} for usage.`)
   }
 }
 
-main();
+main()
