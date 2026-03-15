@@ -47,6 +47,20 @@ Instructions for the agent...
 
 > **Security**: All skill and extension activations require explicit user consent via the policy engine.
 
+## Invocation Control
+
+Gemini CLI does **not** support frontmatter-based invocation control (no `disable-model-invocation`, `user-invocable`, or `allowed-tools` fields). The only recognized frontmatter fields are `name` and `description`.
+
+However, Gemini CLI provides **runtime skill management** via CLI commands:
+
+| Command             | Description                                        |
+| :------------------ | :------------------------------------------------- |
+| `/skills`           | List all available skills and their current status  |
+| `/skills disable <name>` | Disable a skill for the current session        |
+| `/skills enable <name>`  | Re-enable a previously disabled skill          |
+
+Additionally, all skill activations require **explicit user consent** via the policy engine — Gemini always prompts for confirmation before activating a skill.
+
 ## Built-in Skills
 
 - **skill-creator**: helps create new skills (v0.25.0+, built-in since v0.26.0+)

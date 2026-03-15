@@ -43,6 +43,12 @@ my-skill/
     └── api-docs.md
 ```
 
+## Invocation Control
+
+Amp Code does **not** support any frontmatter-based invocation control. The only recognized frontmatter fields are `name` and `description`. There is no equivalent to Claude Code's `disable-model-invocation`, `user-invocable`, or `allowed-tools`.
+
+The model decides when to invoke a skill based on the `name` and `description` fields. Skill priority is determined by location: project-specific skills override user-wide skills, which override built-in skills.
+
 ## Built-in Skill
 
 - **building-skills**: helps create project-specific or user-specific skills
