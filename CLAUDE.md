@@ -195,9 +195,11 @@ description: What it does # Required — triggers implicit invocation
 
 Agent-specific extras:
 
+- **Claude Code**: frontmatter supports `disable-model-invocation`, `user-invocable`, `allowed-tools`, `model`, `context`, `agent`, `hooks`, `argument-hint`
+- **Cursor**: frontmatter supports `disable-model-invocation`, `license`, `compatibility`, `metadata`
 - **Codex**: `agents/openai.yaml` (interface, policy.allow_implicit_invocation, dependencies.tools)
-- **Claude Code**: frontmatter supports `version`, `mode`, `disable-model-invocation`, `allowed-tools`
-- **Gemini CLI**: only `name` + `description` recognized (no agents/google.yaml)
+- **Gemini CLI**: only `name` + `description` recognized; runtime control via `/skills enable|disable` (no agents/google.yaml)
+- **Amp Code**: only `name` + `description` recognized (no invocation control)
 
 ## Code style
 

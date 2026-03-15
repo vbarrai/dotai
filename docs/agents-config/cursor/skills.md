@@ -30,10 +30,14 @@ description: What the skill does and when to use it.
 
 ### Frontmatter fields
 
-| Field         | Description                                                       |
-| :------------ | :---------------------------------------------------------------- |
-| `name`        | Skill name (lowercase, digits, hyphens). Max 64 chars.            |
-| `description` | What the Skill does and when to use it. Required. Max 1024 chars. |
+| Field                      | Required | Description                                                                                                                            |
+| :------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                     | Yes      | Skill name (lowercase, digits, hyphens). Must match parent folder name. Max 64 chars.                                                  |
+| `description`              | Yes      | What the Skill does and when to use it. Max 1024 chars.                                                                                |
+| `disable-model-invocation` | No       | `true` = prevents the agent from automatically loading this Skill. For manual-only workflows (`/deploy`, `/commit`). Default: `false`. |
+| `license`                  | No       | License name or reference to a bundled license file.                                                                                   |
+| `compatibility`            | No       | Environment requirements (system packages, network access, etc.).                                                                      |
+| `metadata`                 | No       | Arbitrary key-value mapping for additional metadata.                                                                                   |
 
 ## Where to store Skills
 
@@ -54,6 +58,28 @@ my-skill/
 └── assets/
     └── template.json  # Resources
 ```
+
+## Invocation Control
+
+By default, the agent can load any Skill automatically when it judges the Skill relevant. Use `disable-model-invocation: true` to restrict a Skill to manual invocation only (via `/skill-name`):
+
+```yaml
+---
+name: deploy
+description: Deploy the application to production
+disable-model-invocation: true
+---
+1. Run the tests
+2. Build the application
+3. Push to the deployment target
+```
+
+| Frontmatter                      | User invokes | Agent invokes | Loaded in context                         |
+| :------------------------------- | :----------- | :------------ | :---------------------------------------- |
+| (default)                        | Yes          | Yes           | Description always, content on invocation |
+| `disable-model-invocation: true` | Yes          | No            | Not loaded until explicitly invoked       |
+
+> **Note**: Unlike Claude Code, Cursor does not support `user-invocable: false` (hide from `/` menu) or `allowed-tools` (restrict tool access per skill).
 
 ## How it works
 
