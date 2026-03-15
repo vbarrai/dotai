@@ -11,7 +11,7 @@ describeConfai('claude-code / url-based MCP', ({ givenSource, sourceFiles, when,
       },
     })
 
-      expect(await sourceFiles()).toMatchInlineSnapshot(`
+    expect(await sourceFiles()).toMatchInlineSnapshot(`
       [
         "mcp.json",
       ]

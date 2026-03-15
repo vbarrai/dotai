@@ -3,11 +3,6 @@ import { join, dirname } from 'path'
 import type { AgentType, HookEvents } from './types.ts'
 import { agents } from './agents.ts'
 
-interface SettingsFile {
-  hooks?: Record<string, unknown[]>
-  [key: string]: unknown
-}
-
 interface DedicatedHooksFile {
   version?: number
   hooks?: Record<string, unknown[]>
@@ -31,7 +26,7 @@ async function writeJsonFile(filePath: string, data: Record<string, unknown>): P
 export async function installHooks(
   hookEvents: HookEvents,
   agentType: AgentType,
-  options: { cwd?: string } = {}
+  options: { cwd?: string } = {},
 ): Promise<{ installed: string[]; skipped: string[] }> {
   const agent = agents[agentType]
   if (!agent.hooksConfigPath || !agent.hooksConfigFormat) {
@@ -89,7 +84,9 @@ export async function installHooks(
   return { installed, skipped }
 }
 
-export async function listInstalledHookEventNames(options: { cwd?: string } = {}): Promise<Set<string>> {
+export async function listInstalledHookEventNames(
+  options: { cwd?: string } = {},
+): Promise<Set<string>> {
   const cwd = options.cwd || process.cwd()
   const names = new Set<string>()
 
@@ -110,7 +107,7 @@ export async function listInstalledHookEventNames(options: { cwd?: string } = {}
 export async function uninstallHooks(
   hookGroupEvents: HookEvents,
   agentType: AgentType,
-  options: { cwd?: string } = {}
+  options: { cwd?: string } = {},
 ): Promise<void> {
   const agent = agents[agentType]
   if (!agent.hooksConfigPath) return
@@ -125,13 +122,9 @@ export async function uninstallHooks(
   for (const [eventName, handlersToRemove] of Object.entries(hookGroupEvents)) {
     if (!hooks[eventName]) continue
 
-    const removeJsonSet = new Set(
-      (handlersToRemove as unknown[]).map((h) => JSON.stringify(h))
-    )
+    const removeJsonSet = new Set((handlersToRemove as unknown[]).map((h) => JSON.stringify(h)))
 
-    hooks[eventName] = hooks[eventName]!.filter(
-      (h) => !removeJsonSet.has(JSON.stringify(h))
-    )
+    hooks[eventName] = hooks[eventName]!.filter((h) => !removeJsonSet.has(JSON.stringify(h)))
 
     if (hooks[eventName]!.length === 0) {
       delete hooks[eventName]

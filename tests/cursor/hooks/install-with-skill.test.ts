@@ -1,28 +1,26 @@
-import { it, expect } from "vitest";
-import { describeConfai } from "../../test-utils.ts";
+import { it, expect } from 'vitest'
+import { describeConfai } from '../../test-utils.ts'
 
 describeConfai(
-  "cursor / hooks alongside a skill",
+  'cursor / hooks alongside a skill',
   ({ givenSource, when, targetFile, targetFiles }) => {
-    it("installs both skill files and hooks config", async () => {
+    it('installs both skill files and hooks config', async () => {
       await givenSource({
-        skills: [{ name: "dev-tools" }],
+        skills: [{ name: 'dev-tools' }],
         hooks: {
-          "format-on-edit": {
+          'format-on-edit': {
             cursor: {
-              afterFileEdit: [
-                { command: ".cursor/hooks/format.sh", matcher: "Write" },
-              ],
+              afterFileEdit: [{ command: '.cursor/hooks/format.sh', matcher: 'Write' }],
             },
           },
         },
-      });
+      })
 
       await when({
-        hooks: ["format-on-edit"],
-        skills: ["dev-tools"],
-        agents: ["cursor"],
-      });
+        hooks: ['format-on-edit'],
+        skills: ['dev-tools'],
+        agents: ['cursor'],
+      })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
       [
@@ -30,9 +28,9 @@ describeConfai(
         ".cursor/hooks.json",
         ".cursor/skills/dev-tools",
       ]
-    `);
+    `)
 
-      expect(await targetFile(".cursor/hooks.json")).toMatchInlineSnapshot(`
+      expect(await targetFile('.cursor/hooks.json')).toMatchInlineSnapshot(`
       "{
         "version": 1,
         "hooks": {
@@ -45,7 +43,7 @@ describeConfai(
         }
       }
       "
-    `);
-    });
+    `)
+    })
   },
-);
+)

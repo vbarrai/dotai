@@ -12,7 +12,7 @@ describeConfai('cursor / install zero MCPs', ({ givenSource, sourceFiles, when, 
       },
     })
 
-      expect(await sourceFiles()).toMatchInlineSnapshot(`
+    expect(await sourceFiles()).toMatchInlineSnapshot(`
       [
         "mcp.json",
       ]

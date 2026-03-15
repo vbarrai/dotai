@@ -16,7 +16,7 @@ describeConfai('cursor / env var translation', ({ givenSource, sourceFiles, when
       },
     })
 
-      expect(await sourceFiles()).toMatchInlineSnapshot(`
+    expect(await sourceFiles()).toMatchInlineSnapshot(`
       [
         "mcp.json",
       ]
