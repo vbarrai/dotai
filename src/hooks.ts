@@ -78,9 +78,7 @@ export async function installHooks(
   return { installed, skipped }
 }
 
-async function listInstalledHookEventNames(
-  options: { cwd?: string } = {},
-): Promise<Set<string>> {
+async function listInstalledHookEventNames(options: { cwd?: string } = {}): Promise<Set<string>> {
   const cwd = options.cwd || process.cwd()
   const names = new Set<string>()
 
