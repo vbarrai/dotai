@@ -19,7 +19,7 @@ export interface SkillLockEntry {
   mcpServers?: string[]
 }
 
-export interface McpLockEntry {
+interface McpLockEntry {
   source: string
   sourceUrl: string
   ref?: string
@@ -27,7 +27,7 @@ export interface McpLockEntry {
   updatedAt: string
 }
 
-export interface HookLockEntry {
+interface HookLockEntry {
   source: string
   sourceUrl: string
   ref?: string
@@ -35,7 +35,7 @@ export interface HookLockEntry {
   updatedAt: string
 }
 
-export interface LockFile {
+interface LockFile {
   version: number
   skills: Record<string, SkillLockEntry>
   mcpServers: Record<string, McpLockEntry>
