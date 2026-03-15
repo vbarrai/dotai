@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "block-dangerous-commands": {
+      "description": "Prevents rm -rf and other destructive commands",
+      "claude-code": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Checking for dangerous commands...'"
+              }
+            ]
+          }
+        ]
+      },
+      "cursor": {
+        "onSave": [
+          {
+            "matcher": "**/*.sh",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Validating shell script...'"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "auto-format": {
+      "description": "Auto-formats code after edits",
+      "claude-code": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Running formatter...'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,25 +1,22 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { addToLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('stores optional fields like ref and mcpServers', async () => {
-  const { addToLock } = await import('../../../src/lock.ts')
-
-  await addToLock('advanced-skill', {
-    source: 'owner/repo',
-    sourceUrl: 'https://github.com/owner/repo',
-    skillPath: 'skills/advanced-skill/SKILL.md',
-    skillFolderHash: 'def456',
-    ref: 'v2.0.0',
-    mcpServers: ['server-a', 'server-b'],
-  })
+  await addToLock(
+    'advanced-skill',
+    {
+      source: 'owner/repo',
+      sourceUrl: 'https://github.com/owner/repo',
+      skillPath: 'skills/advanced-skill/SKILL.md',
+      skillFolderHash: 'def456',
+      ref: 'v2.0.0',
+      mcpServers: ['server-a', 'server-b'],
+    },
+    getCwd(),
+  )
 
   const lock = JSON.parse(await thenLockFile())
   const entry = lock.skills['advanced-skill']

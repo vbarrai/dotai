@@ -1,33 +1,34 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { addToLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('preserves installedAt when updating an existing skill', async () => {
-  const { addToLock } = await import('../../../src/lock.ts')
-
-  await addToLock('my-skill', {
-    source: 'owner/repo',
-    sourceUrl: 'https://github.com/owner/repo',
-    skillPath: 'skills/my-skill/SKILL.md',
-    skillFolderHash: 'hash-v1',
-  })
+  await addToLock(
+    'my-skill',
+    {
+      source: 'owner/repo',
+      sourceUrl: 'https://github.com/owner/repo',
+      skillPath: 'skills/my-skill/SKILL.md',
+      skillFolderHash: 'hash-v1',
+    },
+    getCwd(),
+  )
 
   const firstLock = JSON.parse(await thenLockFile())
   const originalInstalledAt = firstLock.skills['my-skill'].installedAt
 
-  await addToLock('my-skill', {
-    source: 'owner/repo',
-    sourceUrl: 'https://github.com/owner/repo',
-    skillPath: 'skills/my-skill/SKILL.md',
-    skillFolderHash: 'hash-v2',
-  })
+  await addToLock(
+    'my-skill',
+    {
+      source: 'owner/repo',
+      sourceUrl: 'https://github.com/owner/repo',
+      skillPath: 'skills/my-skill/SKILL.md',
+      skillFolderHash: 'hash-v2',
+    },
+    getCwd(),
+  )
 
   const lock = JSON.parse(await thenLockFile())
   expect(lock.skills['my-skill'].installedAt).toBe(originalInstalledAt)

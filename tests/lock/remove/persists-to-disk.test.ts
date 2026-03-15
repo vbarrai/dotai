@@ -1,30 +1,28 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { addToLock, removeFromLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('removeFromLock / persists removal to disk', async () => {
-  vi.resetModules()
-  const { addToLock, removeFromLock } = await import('../../../src/lock.ts')
+  await addToLock(
+    'ephemeral',
+    {
+      source: 'test/repo',
+      sourceUrl: 'https://github.com/test/repo',
+      skillFolderHash: 'hash-ephemeral',
+    },
+    getCwd(),
+  )
 
-  await addToLock('ephemeral', {
-    source: 'test/repo',
-    sourceUrl: 'https://github.com/test/repo',
-    skillFolderHash: 'hash-ephemeral',
-  })
-
-  await removeFromLock('ephemeral')
+  await removeFromLock('ephemeral', getCwd())
 
   expect(await thenLockFile()).toMatchInlineSnapshot(`
     "{
       "version": 1,
-      "skills": {}
+      "skills": {},
+      "mcpServers": {},
+      "hooks": {}
     }"
   `)
 })

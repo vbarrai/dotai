@@ -1,9 +1,12 @@
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import { join, dirname } from 'path'
-import { homedir } from 'os'
+import { readFile, writeFile } from 'fs/promises'
+import { join } from 'path'
 import { execSync } from 'child_process'
 
-const LOCK_PATH = join(homedir(), '.agents', '.skill-lock.json')
+const LOCK_FILENAME = 'ai-lock.json'
+
+function lockPath(cwd?: string): string {
+  return join(cwd || process.cwd(), LOCK_FILENAME)
+}
 
 export interface SkillLockEntry {
   source: string
@@ -16,34 +19,60 @@ export interface SkillLockEntry {
   mcpServers?: string[]
 }
 
-interface SkillLockFile {
-  version: number
-  skills: Record<string, SkillLockEntry>
+export interface McpLockEntry {
+  source: string
+  sourceUrl: string
+  ref?: string
+  installedAt: string
+  updatedAt: string
 }
 
-export async function readLock(): Promise<SkillLockFile> {
+export interface HookLockEntry {
+  source: string
+  sourceUrl: string
+  ref?: string
+  installedAt: string
+  updatedAt: string
+}
+
+export interface LockFile {
+  version: number
+  skills: Record<string, SkillLockEntry>
+  mcpServers: Record<string, McpLockEntry>
+  hooks: Record<string, HookLockEntry>
+}
+
+function emptyLock(): LockFile {
+  return { version: 1, skills: {}, mcpServers: {}, hooks: {} }
+}
+
+export async function readLock(cwd?: string): Promise<LockFile> {
   try {
-    const content = await readFile(LOCK_PATH, 'utf-8')
-    const parsed = JSON.parse(content) as SkillLockFile
+    const content = await readFile(lockPath(cwd), 'utf-8')
+    const parsed = JSON.parse(content) as LockFile
     if (typeof parsed.version !== 'number' || !parsed.skills) {
-      return { version: 1, skills: {} }
+      return emptyLock()
     }
-    return parsed
+    return {
+      ...parsed,
+      mcpServers: parsed.mcpServers ?? {},
+      hooks: parsed.hooks ?? {},
+    }
   } catch {
-    return { version: 1, skills: {} }
+    return emptyLock()
   }
 }
 
-export async function writeLock(lock: SkillLockFile): Promise<void> {
-  await mkdir(dirname(LOCK_PATH), { recursive: true })
-  await writeFile(LOCK_PATH, JSON.stringify(lock, null, 2), 'utf-8')
+export async function writeLock(lock: LockFile, cwd?: string): Promise<void> {
+  await writeFile(lockPath(cwd), JSON.stringify(lock, null, 2), 'utf-8')
 }
 
 export async function addToLock(
   skillName: string,
   entry: Omit<SkillLockEntry, 'installedAt' | 'updatedAt'>,
+  cwd?: string,
 ): Promise<void> {
-  const lock = await readLock()
+  const lock = await readLock(cwd)
   const now = new Date().toISOString()
   const existing = lock.skills[skillName]
 
@@ -53,13 +82,49 @@ export async function addToLock(
     updatedAt: now,
   }
 
-  await writeLock(lock)
+  await writeLock(lock, cwd)
 }
 
-export async function removeFromLock(skillName: string): Promise<void> {
-  const lock = await readLock()
+export async function addMcpToLock(
+  serverName: string,
+  entry: Omit<McpLockEntry, 'installedAt' | 'updatedAt'>,
+  cwd?: string,
+): Promise<void> {
+  const lock = await readLock(cwd)
+  const now = new Date().toISOString()
+  const existing = lock.mcpServers[serverName]
+
+  lock.mcpServers[serverName] = {
+    ...entry,
+    installedAt: existing?.installedAt ?? now,
+    updatedAt: now,
+  }
+
+  await writeLock(lock, cwd)
+}
+
+export async function addHookToLock(
+  groupName: string,
+  entry: Omit<HookLockEntry, 'installedAt' | 'updatedAt'>,
+  cwd?: string,
+): Promise<void> {
+  const lock = await readLock(cwd)
+  const now = new Date().toISOString()
+  const existing = lock.hooks[groupName]
+
+  lock.hooks[groupName] = {
+    ...entry,
+    installedAt: existing?.installedAt ?? now,
+    updatedAt: now,
+  }
+
+  await writeLock(lock, cwd)
+}
+
+export async function removeFromLock(skillName: string, cwd?: string): Promise<void> {
+  const lock = await readLock(cwd)
   delete lock.skills[skillName]
-  await writeLock(lock)
+  await writeLock(lock, cwd)
 }
 
 export function getGitHubToken(): string | null {

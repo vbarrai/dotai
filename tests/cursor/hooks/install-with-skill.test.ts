@@ -23,12 +23,13 @@ describeConfai(
       })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".agents/skills/dev-tools/SKILL.md",
-        ".cursor/hooks.json",
-        ".cursor/skills/dev-tools",
-      ]
-    `)
+        [
+          ".agents/skills/dev-tools/SKILL.md",
+          ".cursor/hooks.json",
+          ".cursor/skills/dev-tools",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.cursor/hooks.json')).toMatchInlineSnapshot(`
       "{

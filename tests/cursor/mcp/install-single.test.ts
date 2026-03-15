@@ -23,10 +23,11 @@ describeConfai(
       await when({ mcps: ['linear'], agents: ['cursor'] })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".cursor/mcp.json",
-      ]
-    `)
+        [
+          ".cursor/mcp.json",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.cursor/mcp.json')).toMatchInlineSnapshot(`
       "{

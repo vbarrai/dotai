@@ -28,12 +28,13 @@ describeConfai(
       })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".agents/skills/dev-tools/SKILL.md",
-        ".claude/settings.json",
-        ".claude/skills/dev-tools",
-      ]
-    `)
+        [
+          ".agents/skills/dev-tools/SKILL.md",
+          ".claude/settings.json",
+          ".claude/skills/dev-tools",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.claude/settings.json')).toMatchInlineSnapshot(`
       "{

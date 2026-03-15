@@ -24,10 +24,11 @@ describeConfai(
       await when({ hooks: ['block-rm'], agents: ['cursor'] })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".cursor/hooks.json",
-      ]
-    `)
+        [
+          ".cursor/hooks.json",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.cursor/hooks.json')).toMatchInlineSnapshot(`
       "{

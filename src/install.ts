@@ -6,7 +6,8 @@ import { cloneRepo, cleanupTempDir } from './git.ts'
 import { discoverSkills, discoverMcpServers, discoverHooks } from './skills.ts'
 import { installSkill, uninstallSkill, listInstalledSkills } from './installer.ts'
 import { agents, detectInstalledAgents } from './agents.ts'
-import { readLock, removeFromLock } from './lock.ts'
+import { readLock, addToLock, addMcpToLock, addHookToLock, removeFromLock } from './lock.ts'
+import { getOwnerRepo } from './source-parser.ts'
 import { installMcpServers, listInstalledMcpServerNames } from './mcp.ts'
 import { installHooks } from './hooks.ts'
 import type { Skill, AgentType, McpServerConfig, HookGroup } from './types.ts'
@@ -245,10 +246,16 @@ export async function runInstall(args: string[]): Promise<void> {
           label: `${e.groupName} ${pc.dim(`(from: ${e.source})`)}${e.group.description ? ` ${pc.dim(`— ${e.group.description}`)}` : ''}`,
         }))
 
+        const lock = await readLock()
+        const installedHookNames = new Set(Object.keys(lock.hooks))
+        const initialHookValues = allHookEntries
+          .filter((e) => installedHookNames.has(e.groupName))
+          .map((e) => e.groupName)
+
         const selectedHook = await p.multiselect({
           message: `Select hooks to install ${pc.dim('(space to toggle)')}`,
           options: hookChoices as any,
-          initialValues: [] as string[],
+          initialValues: initialHookValues,
           required: false,
         })
 
@@ -262,10 +269,16 @@ export async function runInstall(args: string[]): Promise<void> {
       }
     }
 
-    // Determine which agents previously had skills installed
+    // Determine which agents previously had configs installed (skills, MCPs, or hooks)
     const previousAgents = new Set<AgentType>()
     for (const s of installed) {
       for (const a of s.agents) previousAgents.add(a)
+    }
+    // Also check agent config files in the project
+    for (const a of ALL_AGENTS) {
+      const agent = agents[a]
+      if (agent.mcpConfigPath && existsSync(agent.mcpConfigPath)) previousAgents.add(a)
+      if (agent.hooksConfigPath && existsSync(agent.hooksConfigPath)) previousAgents.add(a)
     }
 
     // Select agents
@@ -278,10 +291,10 @@ export async function runInstall(args: string[]): Promise<void> {
       targetAgents = ALL_AGENTS
     } else {
       const detected = detectInstalledAgents()
-      // Only pre-check agents that have skills installed
+      // Pre-check agents that have any config installed
       const preSelected = detected.filter((a) => previousAgents.has(a))
 
-      if (detected.length === 0) {
+      if (detected.length === 0 && previousAgents.size === 0) {
         targetAgents = ALL_AGENTS
         p.log.info('No agents detected, installing to all agents')
       } else if (detected.length === 1 && previousAgents.size === 0) {
@@ -385,6 +398,7 @@ export async function runInstall(args: string[]): Promise<void> {
         for (const agent of ALL_AGENTS) {
           await uninstallSkill(skill.name, agent, { global: false, mcpServerNames })
         }
+        await removeFromLock(skill.name).catch(() => {})
       }
       spinner.stop(`Removed ${toUninstall.length} skill(s)`)
     }
@@ -400,6 +414,8 @@ export async function runInstall(args: string[]): Promise<void> {
       spinner.stop(`Cleaned ${removedAgents.map((a) => agents[a].displayName).join(', ')}`)
     }
 
+    const ownerRepo = getOwnerRepo(parsed)
+
     // Install selected skills
     if (selectedSkills.length > 0) {
       spinner.start('Installing skills...')
@@ -409,6 +425,7 @@ export async function runInstall(args: string[]): Promise<void> {
 
       for (const skill of selectedSkills) {
         const skillMcpServers = mcpBySkill.get(skill.name)
+        let skillSuccess = false
         for (const agent of targetAgents) {
           const result = await installSkill(skill, agent, {
             global: false,
@@ -416,10 +433,25 @@ export async function runInstall(args: string[]): Promise<void> {
           })
           if (result.success) {
             successCount++
+            skillSuccess = true
           } else {
             failCount++
             p.log.error(`Failed: ${skill.name} -> ${agents[agent].displayName}: ${result.error}`)
           }
+        }
+
+        if (skillSuccess) {
+          const mcpNames = skillMcpServers ? Object.keys(skillMcpServers) : undefined
+          await addToLock(skill.name, {
+            source: ownerRepo || source,
+            sourceUrl: parsed.type === 'local' ? parsed.localPath! : parsed.url,
+            skillPath: parsed.subpath
+              ? `${parsed.subpath}/skills/${skill.name}`
+              : `skills/${skill.name}`,
+            ref: parsed.ref,
+            skillFolderHash: '',
+            ...(mcpNames && mcpNames.length > 0 ? { mcpServers: mcpNames } : {}),
+          })
         }
       }
 
@@ -439,6 +471,13 @@ export async function runInstall(args: string[]): Promise<void> {
       for (const agent of targetAgents) {
         await installMcpServers(standaloneMcps, agent)
       }
+      for (const serverName of Object.keys(standaloneMcps)) {
+        await addMcpToLock(serverName, {
+          source: ownerRepo || source,
+          sourceUrl: parsed.type === 'local' ? parsed.localPath! : parsed.url,
+          ref: parsed.ref,
+        })
+      }
       spinner.stop(`Installed ${Object.keys(standaloneMcps).length} MCP server(s)`)
     }
 
@@ -453,6 +492,11 @@ export async function runInstall(args: string[]): Promise<void> {
             await installHooks(hookEvents as Record<string, unknown[]>, agent)
           }
         }
+        await addHookToLock(entry.groupName, {
+          source: ownerRepo || source,
+          sourceUrl: parsed.type === 'local' ? parsed.localPath! : parsed.url,
+          ref: parsed.ref,
+        })
       }
       spinner.stop(`Installed ${selectedHookGroups.length} hook(s)`)
     }

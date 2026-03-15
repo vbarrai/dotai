@@ -1,23 +1,20 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { addToLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('persists the lock entry to disk as formatted JSON', async () => {
-  const { addToLock } = await import('../../../src/lock.ts')
-
-  await addToLock('disk-skill', {
-    source: 'owner/repo',
-    sourceUrl: 'https://github.com/owner/repo',
-    skillPath: 'skills/disk-skill/SKILL.md',
-    skillFolderHash: 'xyz789',
-  })
+  await addToLock(
+    'disk-skill',
+    {
+      source: 'owner/repo',
+      sourceUrl: 'https://github.com/owner/repo',
+      skillPath: 'skills/disk-skill/SKILL.md',
+      skillFolderHash: 'xyz789',
+    },
+    getCwd(),
+  )
 
   const lock = JSON.parse(await thenLockFile())
   lock.skills['disk-skill'].installedAt = '<timestamp>'
@@ -25,6 +22,8 @@ it('persists the lock entry to disk as formatted JSON', async () => {
 
   expect(lock).toMatchInlineSnapshot(`
     {
+      "hooks": {},
+      "mcpServers": {},
       "skills": {
         "disk-skill": {
           "installedAt": "<timestamp>",

@@ -1,23 +1,20 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { addToLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('adds a new skill entry to the lock file', async () => {
-  const { addToLock } = await import('../../../src/lock.ts')
-
-  await addToLock('my-skill', {
-    source: 'owner/repo',
-    sourceUrl: 'https://github.com/owner/repo',
-    skillPath: 'skills/my-skill/SKILL.md',
-    skillFolderHash: 'abc123',
-  })
+  await addToLock(
+    'my-skill',
+    {
+      source: 'owner/repo',
+      sourceUrl: 'https://github.com/owner/repo',
+      skillPath: 'skills/my-skill/SKILL.md',
+      skillFolderHash: 'abc123',
+    },
+    getCwd(),
+  )
 
   const lock = JSON.parse(await thenLockFile())
   lock.skills['my-skill'].installedAt = '<timestamp>'
@@ -25,6 +22,8 @@ it('adds a new skill entry to the lock file', async () => {
 
   expect(lock).toMatchInlineSnapshot(`
     {
+      "hooks": {},
+      "mcpServers": {},
       "skills": {
         "my-skill": {
           "installedAt": "<timestamp>",

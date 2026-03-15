@@ -1,18 +1,11 @@
-import { it, expect, vi } from 'vitest'
-
-vi.mock('os', async () => {
-  const actual = await vi.importActual<typeof import('os')>('os')
-  return { ...actual, homedir: () => (globalThis as any).__TEST_HOME__ }
-})
-
+import { it, expect } from 'vitest'
+import { writeLock } from '../../../src/lock.ts'
 import { setupLockTest } from '../lock-test-utils.ts'
 
-const { thenLockFile } = setupLockTest()
+const { thenLockFile, getCwd } = setupLockTest()
 
 it('writes an empty lock file to disk', async () => {
-  const { writeLock } = await import('../../../src/lock.ts')
-
-  await writeLock({ version: 1, skills: {} })
+  await writeLock({ version: 1, skills: {} }, getCwd())
 
   expect(await thenLockFile()).toMatchInlineSnapshot(`
     "{

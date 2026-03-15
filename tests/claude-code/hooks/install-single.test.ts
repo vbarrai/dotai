@@ -29,10 +29,11 @@ describeConfai(
       await when({ hooks: ['block-rm'], agents: ['claude-code'] })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".claude/settings.json",
-      ]
-    `)
+        [
+          ".claude/settings.json",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.claude/settings.json')).toMatchInlineSnapshot(`
       "{

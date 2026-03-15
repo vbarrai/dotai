@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "pre-commit-lint": {
+      "description": "Runs linter before any commit operation",
+      "claude-code": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Running lint check before commit...'"
+              }
+            ]
+          }
+        ]
+      },
+      "cursor": {
+        "onSave": [
+          {
+            "matcher": "**/*.{ts,tsx,js,jsx}",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Linting on save...'"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "test-on-edit": {
+      "description": "Runs related tests after file edits",
+      "claude-code": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Running related tests...'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

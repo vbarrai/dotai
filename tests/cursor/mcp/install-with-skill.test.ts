@@ -26,12 +26,13 @@ describeConfai(
       await when({ mcps: ['github'], skills: ['dev-tools'], agents: ['cursor'] })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".agents/skills/dev-tools/SKILL.md",
-        ".cursor/mcp.json",
-        ".cursor/skills/dev-tools",
-      ]
-    `)
+        [
+          ".agents/skills/dev-tools/SKILL.md",
+          ".cursor/mcp.json",
+          ".cursor/skills/dev-tools",
+          "ai-lock.json",
+        ]
+      `)
 
       expect(await targetFile('.cursor/mcp.json')).toMatchInlineSnapshot(`
       "{
