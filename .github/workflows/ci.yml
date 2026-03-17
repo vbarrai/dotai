@@ -53,7 +53,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test -- --run
+      - run: pnpm coverage
+      - name: Upload coverage summary
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
 
   build:
     runs-on: ubuntu-latest
@@ -73,20 +79,41 @@ jobs:
           echo "$BUILD_OUTPUT"
           SIZE=$(echo "$BUILD_OUTPUT" | grep -oP '[\d.]+ kB min\+gzipped' | head -1)
           echo "size=$SIZE" >> "$GITHUB_OUTPUT"
-      - name: Update build size badge in README
+      - name: Download coverage summary
+        if: github.ref == 'refs/heads/main'
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage
+      - name: Update badges in README
         if: github.ref == 'refs/heads/main'
         env:
           SIZE: ${{ steps.build.outputs.size }}
         run: |
+          # Update build size badge
           ENCODED_SIZE=$(echo "$SIZE" | sed 's/ /%20/g; s/+/%2B/g')
           sed -i "s|img.shields.io/badge/build%20size-.*-blue|img.shields.io/badge/build%20size-${ENCODED_SIZE}-blue|" README.md
+
+          # Update coverage badge
+          COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json','utf8')).total.lines.pct")
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            COLOR="green"
+          elif (( $(echo "$COVERAGE >= 40" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          sed -i "s|img.shields.io/badge/coverage-.*|img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR})|" README.md
+
           if git diff --quiet README.md; then
-            echo "Badge is already up to date"
+            echo "Badges are already up to date"
           else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add README.md
-            git commit -m "Update build size badge to ${SIZE}"
+            git commit -m "Update badges (build: ${SIZE}, coverage: ${COVERAGE}%)"
             git push
           fi
 
