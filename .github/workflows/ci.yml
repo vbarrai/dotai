@@ -104,6 +104,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         env:
           SIZE: ${{ steps.build.outputs.size }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Update build size badge
           ENCODED_SIZE=$(echo "$SIZE" | sed 's/ /%20/g; s/+/%2B/g')
@@ -125,11 +126,15 @@ jobs:
           if git diff --quiet README.md; then
             echo "Badges are already up to date"
           else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add README.md
-            git commit -m "Update badges (build: ${SIZE}, coverage: ${COVERAGE}%)"
-            git push
+            CONTENT=$(base64 -w 0 README.md)
+            SHA=$(gh api repos/${{ github.repository }}/contents/README.md --jq .sha)
+            gh api repos/${{ github.repository }}/contents/README.md \
+              -X PUT \
+              -f message="Update badges (build: ${SIZE}, coverage: ${COVERAGE}%)" \
+              -f content="$CONTENT" \
+              -f sha="$SHA" \
+              -f branch="main"
+            echo "Badges updated via API"
           fi
 
   version-check:
