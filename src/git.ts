@@ -48,11 +48,14 @@ export async function cloneRepo(url: string, ref?: string): Promise<string> {
   }
 }
 
-export async function getTreeHash(repoDir: string, folderPath: string): Promise<string> {
-  const git = simpleGit(repoDir)
+export function getTreeHash(repoDir: string, folderPath: string): Promise<string> {
   const treePath = folderPath.replace(/\\/g, '/').replace(/\/$/, '')
-  const result = await git.revparse([`HEAD:${treePath}`])
-  return result.trim()
+  return new Promise((resolve, reject) => {
+    execFile('git', ['rev-parse', `HEAD:${treePath}`], { cwd: repoDir }, (error, stdout) => {
+      if (error) reject(error)
+      else resolve(stdout.trim())
+    })
+  })
 }
 
 export async function cleanupTempDir(dir: string): Promise<void> {
