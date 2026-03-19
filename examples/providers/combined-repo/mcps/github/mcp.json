@@ -6,13 +6,6 @@
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
-    },
-    "sentry": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.sentry.dev/sse"],
-      "env": {
-        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}"
-      }
     }
   }
 }

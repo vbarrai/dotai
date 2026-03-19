@@ -23,7 +23,6 @@ async function exists(path: string): Promise<boolean> {
 
 export interface SkillFixture {
   name: string
-  mcpServers?: Record<string, McpServerConfig>
 }
 
 export function setupScenario() {
@@ -54,27 +53,38 @@ export function setupScenario() {
   async function givenSource(opts: {
     skills?: SkillFixture[]
     mcps?: Record<string, McpServerConfig>
+    mcpDirs?: Record<string, McpServerConfig>
     hooks?: Record<string, HookGroup>
+    hookDirs?: Record<string, HookGroup>
   }) {
     const files: FileTree = {}
 
     for (const skill of opts.skills ?? []) {
       files[`./skills/${skill.name}/SKILL.md`] = skillFile(skill.name)
-      if (skill.mcpServers) {
-        files[`./skills/${skill.name}/mcp.json`] = JSON.stringify(
-          { mcpServers: skill.mcpServers },
-          null,
-          2,
-        )
-      }
     }
 
     if (opts.mcps) {
       files['./mcp.json'] = JSON.stringify({ mcpServers: opts.mcps }, null, 2)
     }
 
+    if (opts.mcpDirs) {
+      for (const [name, config] of Object.entries(opts.mcpDirs)) {
+        files[`./mcps/${name}/mcp.json`] = JSON.stringify(
+          { mcpServers: { [name]: config } },
+          null,
+          2,
+        )
+      }
+    }
+
     if (opts.hooks) {
       files['./hooks.json'] = JSON.stringify({ hooks: opts.hooks }, null, 2)
+    }
+
+    if (opts.hookDirs) {
+      for (const [name, group] of Object.entries(opts.hookDirs)) {
+        files[`./hooks/${name}/hooks.json`] = JSON.stringify({ hooks: { [name]: group } }, null, 2)
+      }
     }
 
     await given(files)
@@ -102,7 +112,7 @@ export function setupScenario() {
   }
 
   async function givenSkillWithMcp(name: string, mcpServers: Record<string, McpServerConfig>) {
-    await givenSource({ skills: [{ name, mcpServers }] })
+    await givenSource({ skills: [{ name }], mcpDirs: mcpServers })
   }
 
   async function whenInstall(opts: {

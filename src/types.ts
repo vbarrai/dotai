@@ -24,8 +24,6 @@ export interface Skill {
   description: string
   path: string
   rawContent?: string
-  mcpServers?: Record<string, McpServerConfig>
-  hookGroups?: Record<string, HookGroup>
 }
 
 export interface AgentConfig {

@@ -3,7 +3,13 @@ import pc from 'picocolors'
 import { existsSync } from 'fs'
 import { parseSource } from './source-parser.ts'
 import { cloneRepo, cleanupTempDir, getTreeHash } from './git.ts'
-import { discoverSkills, discoverMcpServers, discoverHooks } from './skills.ts'
+import {
+  discoverSkills,
+  discoverMcpServers,
+  discoverMcpDirs,
+  discoverHooks,
+  discoverHookDirs,
+} from './skills.ts'
 import { installSkill, uninstallSkill, listInstalledSkills } from './installer.ts'
 import { agents, detectInstalledAgents } from './agents.ts'
 import { readLock, addToLock, addMcpToLock, addHookToLock, removeFromLock } from './lock.ts'
@@ -94,11 +100,15 @@ export async function runInstall(args: string[]): Promise<void> {
     spinner.start('Discovering skills, MCP servers, and hooks...')
     const skills = await discoverSkills(skillsDir)
     const rootMcpServers = await discoverMcpServers(skillsDir)
+    const dirMcpServers = await discoverMcpDirs(skillsDir)
     const rootHooks = await discoverHooks(skillsDir)
+    const dirHooks = await discoverHookDirs(skillsDir)
     const hasRootMcp = Object.keys(rootMcpServers).length > 0
+    const hasDirMcps = Object.keys(dirMcpServers).length > 0
     const hasRootHooks = Object.keys(rootHooks).length > 0
+    const hasDirHooks = Object.keys(dirHooks).length > 0
 
-    if (skills.length === 0 && !hasRootMcp && !hasRootHooks) {
+    if (skills.length === 0 && !hasRootMcp && !hasDirMcps && !hasRootHooks && !hasDirHooks) {
       spinner.stop(pc.red('Nothing found'))
       p.log.error('No skills, MCP servers, or hooks found.')
       await cleanup(tempDir)
@@ -107,8 +117,10 @@ export async function runInstall(args: string[]): Promise<void> {
 
     const parts: string[] = []
     if (skills.length > 0) parts.push(`${skills.length} skill(s)`)
-    if (hasRootMcp) parts.push(`${Object.keys(rootMcpServers).length} MCP server(s)`)
-    if (hasRootHooks) parts.push(`${Object.keys(rootHooks).length} hook(s)`)
+    const totalMcpCount = Object.keys(rootMcpServers).length + Object.keys(dirMcpServers).length
+    if (totalMcpCount > 0) parts.push(`${totalMcpCount} MCP server(s)`)
+    const totalHookCount = Object.keys(rootHooks).length + Object.keys(dirHooks).length
+    if (totalHookCount > 0) parts.push(`${totalHookCount} hook(s)`)
     spinner.stop(`Found ${pc.green(parts.join(' + '))}`)
 
     // Check which skills are already installed
@@ -150,22 +162,18 @@ export async function runInstall(args: string[]): Promise<void> {
       selectedSkills = selected as Skill[]
     }
 
-    // Collect MCP servers from selected skills + root mcp.json
+    // Collect MCP servers from root mcp.json + mcps/ directories
     interface McpEntry {
       serverName: string
       source: string
       config: McpServerConfig
     }
     const allMcpEntries: McpEntry[] = []
-    for (const skill of selectedSkills) {
-      if (skill.mcpServers) {
-        for (const [serverName, config] of Object.entries(skill.mcpServers)) {
-          allMcpEntries.push({ serverName, source: skill.name, config })
-        }
-      }
-    }
     for (const [serverName, config] of Object.entries(rootMcpServers)) {
       allMcpEntries.push({ serverName, source: 'mcp.json', config })
+    }
+    for (const [serverName, config] of Object.entries(dirMcpServers)) {
+      allMcpEntries.push({ serverName, source: `mcps/${serverName}`, config })
     }
 
     // Select MCP servers
@@ -181,7 +189,7 @@ export async function runInstall(args: string[]): Promise<void> {
 
         const mcpChoices = allMcpEntries.map((e) => ({
           value: e.serverName,
-          label: `${e.serverName} ${pc.dim(`(from: ${e.source})`)}`,
+          label: e.serverName,
         }))
 
         const initialMcpValues = allMcpEntries
@@ -205,31 +213,18 @@ export async function runInstall(args: string[]): Promise<void> {
       }
     }
 
-    // Build per-skill MCP server maps (only selected servers)
-    const mcpBySkill = new Map<string, Record<string, McpServerConfig>>()
-    for (const entry of allMcpEntries) {
-      if (selectedMcpNames.has(entry.serverName)) {
-        if (!mcpBySkill.has(entry.source)) mcpBySkill.set(entry.source, {})
-        mcpBySkill.get(entry.source)![entry.serverName] = entry.config
-      }
-    }
-
-    // Collect hook groups from selected skills + root hooks.json
+    // Collect hook groups from root hooks.json + hooks/ directories
     interface HookEntry {
       groupName: string
       source: string
       group: HookGroup
     }
     const allHookEntries: HookEntry[] = []
-    for (const skill of selectedSkills) {
-      if (skill.hookGroups) {
-        for (const [groupName, group] of Object.entries(skill.hookGroups)) {
-          allHookEntries.push({ groupName, source: skill.name, group })
-        }
-      }
-    }
     for (const [groupName, group] of Object.entries(rootHooks)) {
       allHookEntries.push({ groupName, source: 'hooks.json', group })
+    }
+    for (const [groupName, group] of Object.entries(dirHooks)) {
+      allHookEntries.push({ groupName, source: `hooks/${groupName}`, group })
     }
 
     // Select hooks
@@ -243,7 +238,7 @@ export async function runInstall(args: string[]): Promise<void> {
       } else {
         const hookChoices = allHookEntries.map((e) => ({
           value: e.groupName,
-          label: `${e.groupName} ${pc.dim(`(from: ${e.source})`)}${e.group.description ? ` ${pc.dim(`— ${e.group.description}`)}` : ''}`,
+          label: `${e.groupName}${e.group.description ? ` ${pc.dim(`— ${e.group.description}`)}` : ''}`,
         }))
 
         const lock = await readLock()
@@ -331,10 +326,13 @@ export async function runInstall(args: string[]): Promise<void> {
       (s) => installedNames.has(s.name) && !selectedNames.has(s.name),
     )
 
-    // Build standalone MCP map (root-level, not tied to any skill)
+    // Build standalone MCP map (root-level or mcps/ dir, not tied to any skill)
     const standaloneMcps: Record<string, McpServerConfig> = {}
     for (const entry of allMcpEntries) {
-      if (entry.source === 'mcp.json' && selectedMcpNames.has(entry.serverName)) {
+      if (
+        (entry.source === 'mcp.json' || entry.source.startsWith('mcps/')) &&
+        selectedMcpNames.has(entry.serverName)
+      ) {
         standaloneMcps[entry.serverName] = entry.config
       }
     }
@@ -391,12 +389,9 @@ export async function runInstall(args: string[]): Promise<void> {
     // Uninstall unchecked skills from ALL agents (selected + removed)
     if (toUninstall.length > 0) {
       spinner.start('Removing unchecked skills...')
-      const lock = await readLock()
       for (const skill of toUninstall) {
-        const lockEntry = lock.skills[skill.name]
-        const mcpServerNames = lockEntry?.mcpServers
         for (const agent of ALL_AGENTS) {
-          await uninstallSkill(skill.name, agent, { global: false, mcpServerNames })
+          await uninstallSkill(skill.name, agent, { global: false })
         }
         await removeFromLock(skill.name).catch(() => {})
       }
@@ -424,13 +419,9 @@ export async function runInstall(args: string[]): Promise<void> {
       let failCount = 0
 
       for (const skill of selectedSkills) {
-        const skillMcpServers = mcpBySkill.get(skill.name)
         let skillSuccess = false
         for (const agent of targetAgents) {
-          const result = await installSkill(skill, agent, {
-            global: false,
-            mcpServers: skillMcpServers,
-          })
+          const result = await installSkill(skill, agent, { global: false })
           if (result.success) {
             successCount++
             skillSuccess = true
@@ -441,7 +432,6 @@ export async function runInstall(args: string[]): Promise<void> {
         }
 
         if (skillSuccess) {
-          const mcpNames = skillMcpServers ? Object.keys(skillMcpServers) : undefined
           const skillRelPath = parsed.subpath
             ? `${parsed.subpath}/skills/${skill.name}`
             : `skills/${skill.name}`
@@ -455,7 +445,6 @@ export async function runInstall(args: string[]): Promise<void> {
             skillPath: skillRelPath,
             ref: parsed.ref,
             skillFolderHash,
-            ...(mcpNames && mcpNames.length > 0 ? { mcpServers: mcpNames } : {}),
           })
         }
       }
@@ -569,14 +558,10 @@ async function runUninstall(): Promise<void> {
 
   spinner.start('Removing skills...')
 
-  const lock = await readLock()
   for (const skill of toRemove) {
-    const lockEntry = lock.skills[skill.name]
-    const mcpServerNames = lockEntry?.mcpServers
     for (const agent of skill.agents) {
       await uninstallSkill(skill.dirName, agent, {
         global: skill.scope === 'global',
-        mcpServerNames,
       })
     }
 

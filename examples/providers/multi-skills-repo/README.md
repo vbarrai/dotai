@@ -12,13 +12,15 @@ skills/
     SKILL.md              # Test generation skill
   db-assistant/
     SKILL.md              # Database assistant skill
-    mcp.json              # Declares a PostgreSQL MCP server
+mcps/
+  postgres/
+    mcp.json              # PostgreSQL MCP server
 ```
 
 ## What it demonstrates
 
 - Multiple skills in a single repo
-- A skill with an MCP server (`db-assistant` → `postgres`)
+- A standalone MCP server in `mcps/postgres/`
 - Skills without MCP (`code-review`, `test-helper`)
 
 ## Quick test
