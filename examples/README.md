@@ -56,7 +56,7 @@ CLI="node --experimental-strip-types ../../../src/cli.ts"
 ```bash
 $CLI install ../../providers/multi-skills-repo -y --agents=claude-code
 ls .claude/skills/                   # code-review  db-assistant  test-helper
-rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ### 2. MCP only
@@ -64,7 +64,7 @@ rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
 ```bash
 $CLI install ../../providers/mcp-only-repo -y --agents=claude-code
 cat .mcp.json                        # github + brave-search + linear
-rm -rf .agents .claude .cursor .codex .mcp.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ### 3. Hooks only
@@ -72,7 +72,7 @@ rm -rf .agents .claude .cursor .codex .mcp.json
 ```bash
 $CLI install ../../providers/hooks-only-repo -y --agents=claude-code
 cat .claude/settings.json             # PreToolUse + PostToolUse
-rm -rf .agents .claude .cursor .codex
+rm -rf .agents .claude .cursor .codex ai-lock.json
 ```
 
 ### 4. Combined (skills + MCPs + hooks)
@@ -82,7 +82,7 @@ $CLI install ../../providers/combined-repo -y --agents=claude-code
 ls .claude/skills/                    # lint-guard  test-runner
 cat .mcp.json                         # github + sentry
 cat .claude/settings.json             # hooks
-rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ### 5. Interactive mode (full form)
@@ -111,7 +111,7 @@ $CLI install ../../providers/combined-repo -y --agents=cursor
 $CLI install ../../providers/combined-repo -y \
   --skills=lint-guard --mcps=github --hooks=pre-commit-lint --agents=claude-code
 
-rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ### 7. Re-install & uninstall
@@ -128,7 +128,7 @@ ls .claude/skills/                   # api-helper only
 # Uninstall mode (no source)
 $CLI install
 
-rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ### 8. Multi-agent env var translation
@@ -137,7 +137,7 @@ rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
 $CLI install ../../providers/mcp-only-repo -y --agents=claude-code,cursor --mcps=github
 cat .mcp.json                        # "${GITHUB_TOKEN}" (bare)
 cat .cursor/mcp.json                 # "${env:GITHUB_TOKEN}" (env-prefix)
-rm -rf .agents .claude .cursor .codex .mcp.json
+rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
 ---
@@ -145,6 +145,6 @@ rm -rf .agents .claude .cursor .codex .mcp.json
 ## Full cleanup
 
 ```bash
-cd examples/consumers/project-a && rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
-cd ../project-b && rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
+cd examples/consumers/project-a && rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
+cd ../project-b && rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
