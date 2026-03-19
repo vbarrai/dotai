@@ -28,22 +28,6 @@
           }
         ]
       }
-    },
-    "test-on-edit": {
-      "description": "Runs related tests after file edits",
-      "claude-code": {
-        "PostToolUse": [
-          {
-            "matcher": "Edit",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "echo 'Running related tests...'"
-              }
-            ]
-          }
-        ]
-      }
     }
   }
 }

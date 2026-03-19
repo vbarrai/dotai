@@ -15,14 +15,16 @@ mcps/
     mcp.json              # GitHub MCP server
   sentry/
     mcp.json              # Sentry MCP server
-hooks.json                # 2 hook groups: pre-commit-lint, test-on-edit
+hooks/
+  pre-commit-lint/
+    hooks.json            # Runs linter before commit
+  test-on-edit/
+    hooks.json            # Runs tests after file edits
 ```
 
 ## What it demonstrates
 
-- Multiple skills
-- MCP servers in dedicated `mcps/` directories
-- Hook groups with agent-specific event handlers
+- Multiple skills, MCPs, and hooks in dedicated directories
 - The complete interactive form: skills → MCPs → hooks → agents → confirm
 
 ## Quick test

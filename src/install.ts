@@ -3,7 +3,13 @@ import pc from 'picocolors'
 import { existsSync } from 'fs'
 import { parseSource } from './source-parser.ts'
 import { cloneRepo, cleanupTempDir, getTreeHash } from './git.ts'
-import { discoverSkills, discoverMcpServers, discoverMcpDirs, discoverHooks } from './skills.ts'
+import {
+  discoverSkills,
+  discoverMcpServers,
+  discoverMcpDirs,
+  discoverHooks,
+  discoverHookDirs,
+} from './skills.ts'
 import { installSkill, uninstallSkill, listInstalledSkills } from './installer.ts'
 import { agents, detectInstalledAgents } from './agents.ts'
 import { readLock, addToLock, addMcpToLock, addHookToLock, removeFromLock } from './lock.ts'
@@ -96,11 +102,13 @@ export async function runInstall(args: string[]): Promise<void> {
     const rootMcpServers = await discoverMcpServers(skillsDir)
     const dirMcpServers = await discoverMcpDirs(skillsDir)
     const rootHooks = await discoverHooks(skillsDir)
+    const dirHooks = await discoverHookDirs(skillsDir)
     const hasRootMcp = Object.keys(rootMcpServers).length > 0
     const hasDirMcps = Object.keys(dirMcpServers).length > 0
     const hasRootHooks = Object.keys(rootHooks).length > 0
+    const hasDirHooks = Object.keys(dirHooks).length > 0
 
-    if (skills.length === 0 && !hasRootMcp && !hasDirMcps && !hasRootHooks) {
+    if (skills.length === 0 && !hasRootMcp && !hasDirMcps && !hasRootHooks && !hasDirHooks) {
       spinner.stop(pc.red('Nothing found'))
       p.log.error('No skills, MCP servers, or hooks found.')
       await cleanup(tempDir)
@@ -111,7 +119,8 @@ export async function runInstall(args: string[]): Promise<void> {
     if (skills.length > 0) parts.push(`${skills.length} skill(s)`)
     const totalMcpCount = Object.keys(rootMcpServers).length + Object.keys(dirMcpServers).length
     if (totalMcpCount > 0) parts.push(`${totalMcpCount} MCP server(s)`)
-    if (hasRootHooks) parts.push(`${Object.keys(rootHooks).length} hook(s)`)
+    const totalHookCount = Object.keys(rootHooks).length + Object.keys(dirHooks).length
+    if (totalHookCount > 0) parts.push(`${totalHookCount} hook(s)`)
     spinner.stop(`Found ${pc.green(parts.join(' + '))}`)
 
     // Check which skills are already installed
@@ -204,22 +213,18 @@ export async function runInstall(args: string[]): Promise<void> {
       }
     }
 
-    // Collect hook groups from selected skills + root hooks.json
+    // Collect hook groups from root hooks.json + hooks/ directories
     interface HookEntry {
       groupName: string
       source: string
       group: HookGroup
     }
     const allHookEntries: HookEntry[] = []
-    for (const skill of selectedSkills) {
-      if (skill.hookGroups) {
-        for (const [groupName, group] of Object.entries(skill.hookGroups)) {
-          allHookEntries.push({ groupName, source: skill.name, group })
-        }
-      }
-    }
     for (const [groupName, group] of Object.entries(rootHooks)) {
       allHookEntries.push({ groupName, source: 'hooks.json', group })
+    }
+    for (const [groupName, group] of Object.entries(dirHooks)) {
+      allHookEntries.push({ groupName, source: `hooks/${groupName}`, group })
     }
 
     // Select hooks

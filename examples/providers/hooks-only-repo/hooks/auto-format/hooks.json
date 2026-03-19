@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "auto-format": {
+      "description": "Auto-formats code after edits",
+      "claude-code": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo 'Running formatter...'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

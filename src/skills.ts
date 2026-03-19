@@ -65,14 +65,12 @@ export async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
     }
 
     const skillDir = dirname(skillMdPath)
-    const hookGroups = await parseHooksJson(skillDir)
 
     return {
       name: data.name,
       description: data.description,
       path: skillDir,
       rawContent: content,
-      hookGroups,
     }
   } catch {
     return null
@@ -150,4 +148,26 @@ export async function discoverMcpDirs(basePath: string): Promise<Record<string, 
  */
 export async function discoverHooks(basePath: string): Promise<Record<string, HookGroup>> {
   return (await parseHooksJson(basePath)) ?? {}
+}
+
+/**
+ * Discovers hook groups from hooks/<name>/hooks.json directories.
+ * Each subdirectory under hooks/ can contain its own hooks.json.
+ */
+export async function discoverHookDirs(basePath: string): Promise<Record<string, HookGroup>> {
+  const hooksDir = join(basePath, 'hooks')
+  const result: Record<string, HookGroup> = {}
+
+  try {
+    const entries = await readdir(hooksDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory() || SKIP_DIRS.has(entry.name)) continue
+      const groups = await parseHooksJson(join(hooksDir, entry.name))
+      if (groups) Object.assign(result, groups)
+    }
+  } catch {
+    // hooks/ directory doesn't exist
+  }
+
+  return result
 }

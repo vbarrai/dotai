@@ -5,13 +5,17 @@ Provider repository focused on **distributing hooks only** (no skills or MCP ser
 ## Structure
 
 ```
-hooks.json              # 2 hook groups: block-dangerous-commands, auto-format
+hooks/
+  block-dangerous-commands/
+    hooks.json            # Prevents rm -rf and other destructive commands
+  auto-format/
+    hooks.json            # Auto-formats code after edits
 ```
 
 ## What it demonstrates
 
-- A provider with only hook configurations (no SKILL.md or mcp.json)
-- Multiple hook groups in a single `hooks.json`
+- A provider with only hook configurations (no skills or MCPs)
+- Each hook group in its own `hooks/<name>/hooks.json` directory
 - Agent-specific hook definitions (claude-code vs cursor have different events)
 - The `--hooks` flag to selectively install hook groups
 

@@ -24,7 +24,6 @@ export interface Skill {
   description: string
   path: string
   rawContent?: string
-  hookGroups?: Record<string, HookGroup>
 }
 
 export interface AgentConfig {
