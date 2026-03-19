@@ -6,24 +6,21 @@ describeConfai(
   ({ givenSource, whenInstall, targetFiles }) => {
     it('should install skill but skip MCP config for codex', async () => {
       await givenSource({
-        skills: [
-          {
-            name: 'with-mcp',
-            mcpServers: { github: { command: 'npx', args: ['-y', '@mcp/github'] } },
-          },
-        ],
+        skills: [{ name: 'with-mcp' }],
+        mcpDirs: {
+          github: { command: 'npx', args: ['-y', '@mcp/github'] },
+        },
       })
 
-      await whenInstall({ skills: ['with-mcp'], agents: ['codex'] })
+      await whenInstall({ skills: ['with-mcp'], mcps: ['github'], agents: ['codex'] })
 
       expect(await targetFiles()).toMatchInlineSnapshot(`
-      [
-        ".agents/skills/with-mcp/SKILL.md",
-        ".agents/skills/with-mcp/mcp.json",
-        ".codex/skills/with-mcp",
-        "ai-lock.json",
-      ]
-    `)
+        [
+          ".agents/skills/with-mcp/SKILL.md",
+          ".codex/skills/with-mcp",
+          "ai-lock.json",
+        ]
+      `)
     })
   },
 )

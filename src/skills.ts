@@ -65,7 +65,6 @@ export async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
     }
 
     const skillDir = dirname(skillMdPath)
-    const mcpServers = await parseMcpJson(skillDir)
     const hookGroups = await parseHooksJson(skillDir)
 
     return {
@@ -73,7 +72,6 @@ export async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
       description: data.description,
       path: skillDir,
       rawContent: content,
-      mcpServers,
       hookGroups,
     }
   } catch {
@@ -122,6 +120,28 @@ export async function discoverMcpServers(
   basePath: string,
 ): Promise<Record<string, McpServerConfig>> {
   return (await parseMcpJson(basePath)) ?? {}
+}
+
+/**
+ * Discovers MCP servers from mcps/<name>/mcp.json directories.
+ * Each subdirectory under mcps/ can contain its own mcp.json.
+ */
+export async function discoverMcpDirs(basePath: string): Promise<Record<string, McpServerConfig>> {
+  const mcpsDir = join(basePath, 'mcps')
+  const result: Record<string, McpServerConfig> = {}
+
+  try {
+    const entries = await readdir(mcpsDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory() || SKIP_DIRS.has(entry.name)) continue
+      const servers = await parseMcpJson(join(mcpsDir, entry.name))
+      if (servers) Object.assign(result, servers)
+    }
+  } catch {
+    // mcps/ directory doesn't exist
+  }
+
+  return result
 }
 
 /**

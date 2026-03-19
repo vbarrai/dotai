@@ -10,14 +10,18 @@ skills/
     SKILL.md              # Lint enforcement skill
   test-runner/
     SKILL.md              # Test automation skill
-mcp.json                  # Root-level MCPs: github, sentry
+mcps/
+  github/
+    mcp.json              # GitHub MCP server
+  sentry/
+    mcp.json              # Sentry MCP server
 hooks.json                # 2 hook groups: pre-commit-lint, test-on-edit
 ```
 
 ## What it demonstrates
 
 - Multiple skills
-- Root-level MCP servers (standalone, not tied to a skill)
+- MCP servers in dedicated `mcps/` directories
 - Hook groups with agent-specific event handlers
 - The complete interactive form: skills → MCPs → hooks → agents → confirm
 

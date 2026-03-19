@@ -12,7 +12,7 @@ examples/
     full-featured-repo/              # 3 skills + 4 MCP servers
     mcp-only-repo/                   # 0 skills + 3 MCP servers (standalone)
     hooks-only-repo/                 # 0 skills + 2 hook groups (standalone)
-    combined-repo/                   # 2 skills + 3 MCPs + 2 hooks (all features)
+    combined-repo/                   # 2 skills + 2 MCPs + 2 hooks (all features)
   consumers/                         # Target projects that receive the configs
     project-a/                       # Primary test project
     project-b/                       # Secondary test project (isolated)
@@ -33,14 +33,14 @@ $CLI install <path-to-provider> [flags]
 
 ## Providers overview
 
-| Provider             | Skills | MCPs | Hooks | Use case                           |
-| :------------------- | :----: | :--: | :---: | :--------------------------------- |
-| `single-skill-repo`  |   1    |  0   |   0   | Root SKILL.md fallback             |
-| `multi-skills-repo`  |   3    |  1   |   0   | Multiple skills, one with MCP      |
-| `full-featured-repo` |   3    |  4   |   0   | Skills + MCPs spread across skills |
-| `mcp-only-repo`      |   0    |  3   |   0   | Standalone MCP distribution        |
-| `hooks-only-repo`    |   0    |  0   |   2   | Standalone hooks distribution      |
-| `combined-repo`      |   2    |  3   |   2   | All three resource types           |
+| Provider             | Skills | MCPs | Hooks | Use case                         |
+| :------------------- | :----: | :--: | :---: | :------------------------------- |
+| `single-skill-repo`  |   1    |  0   |   0   | Root SKILL.md fallback           |
+| `multi-skills-repo`  |   3    |  1   |   0   | Multiple skills + standalone MCP |
+| `full-featured-repo` |   3    |  4   |   0   | Skills + MCPs in mcps/ dirs      |
+| `mcp-only-repo`      |   0    |  3   |   0   | Standalone MCP distribution      |
+| `hooks-only-repo`    |   0    |  0   |   2   | Standalone hooks distribution    |
+| `combined-repo`      |   2    |  2   |   2   | All three resource types         |
 
 ---
 
@@ -80,7 +80,7 @@ rm -rf .agents .claude .cursor .codex
 ```bash
 $CLI install ../../providers/combined-repo -y --agents=claude-code
 ls .claude/skills/                    # lint-guard  test-runner
-cat .mcp.json                         # eslint + github + sentry
+cat .mcp.json                         # github + sentry
 cat .claude/settings.json             # hooks
 rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
 ```
@@ -109,7 +109,7 @@ $CLI install ../../providers/combined-repo -y --agents=cursor
 
 # Combine all filters
 $CLI install ../../providers/combined-repo -y \
-  --skills=lint-guard --mcps=eslint,github --hooks=pre-commit-lint --agents=claude-code
+  --skills=lint-guard --mcps=github --hooks=pre-commit-lint --agents=claude-code
 
 rm -rf .agents .claude .cursor .codex .mcp.json .confai-lock.json
 ```

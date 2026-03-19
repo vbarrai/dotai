@@ -1,6 +1,6 @@
 # full-featured-repo
 
-Provider repository demonstrating **all maconfai features**: multiple skills, multiple MCP servers across skills, and skills without MCP.
+Provider repository demonstrating **all maconfai features**: multiple skills, multiple MCP servers, and skills without MCP.
 
 ## Structure
 
@@ -8,18 +8,24 @@ Provider repository demonstrating **all maconfai features**: multiple skills, mu
 skills/
   api-helper/
     SKILL.md              # API development skill
-    mcp.json              # Declares: github, linear
   doc-writer/
     SKILL.md              # Documentation skill (no MCP)
   deploy-assistant/
     SKILL.md              # DevOps/deployment skill
-    mcp.json              # Declares: filesystem, brave-search
+mcps/
+  github/
+    mcp.json              # GitHub MCP server
+  linear/
+    mcp.json              # Linear MCP server
+  filesystem/
+    mcp.json              # Filesystem MCP server
+  brave-search/
+    mcp.json              # Brave Search MCP server
 ```
 
 ## What it demonstrates
 
-- 3 skills: some with MCP, one without
-- 4 MCP servers spread across 2 skills (`github`, `linear`, `filesystem`, `brave-search`)
+- 3 skills, 4 MCP servers in dedicated `mcps/` directories
 - Env var default syntax: `${PROJECT_ROOT:-/tmp}`
 - Interactive prompts for skill, MCP, and agent selection
 

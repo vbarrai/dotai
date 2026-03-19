@@ -1,19 +1,23 @@
 # mcp-only-repo
 
-Provider repository focused on **distributing MCP servers only** (no SKILL.md needed).
+Provider repository focused on **distributing MCP servers only** (no skills needed).
 
 ## Structure
 
 ```
-skills/
-  mcp-tools/
-    mcp.json              # Declares 3 MCP servers: github, brave-search, linear
+mcps/
+  github/
+    mcp.json              # GitHub MCP server
+  brave-search/
+    mcp.json              # Brave Search MCP server
+  linear/
+    mcp.json              # Linear MCP server (remote)
 ```
 
 ## What it demonstrates
 
-- A provider with only MCP server configurations (no SKILL.md required)
-- Multiple MCP servers in a single `mcp.json` (including Linear's official remote MCP)
+- A provider with only MCP server configurations (no skills)
+- Each MCP server in its own `mcps/<name>/mcp.json` directory
 - Environment variables using `${VAR}` syntax (auto-translated per agent)
 - The `--mcps` flag to selectively install MCP servers
 

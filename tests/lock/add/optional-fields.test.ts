@@ -4,7 +4,7 @@ import { setupLockTest } from '../lock-test-utils.ts'
 
 const { thenLockFile, getCwd } = setupLockTest()
 
-it('stores optional fields like ref and mcpServers', async () => {
+it('stores optional fields like ref and skillPath', async () => {
   await addToLock(
     'advanced-skill',
     {
@@ -13,7 +13,6 @@ it('stores optional fields like ref and mcpServers', async () => {
       skillPath: 'skills/advanced-skill/SKILL.md',
       skillFolderHash: 'def456',
       ref: 'v2.0.0',
-      mcpServers: ['server-a', 'server-b'],
     },
     getCwd(),
   )
@@ -24,13 +23,8 @@ it('stores optional fields like ref and mcpServers', async () => {
   expect({
     ref: entry.ref,
     skillPath: entry.skillPath,
-    mcpServers: entry.mcpServers,
   }).toMatchInlineSnapshot(`
     {
-      "mcpServers": [
-        "server-a",
-        "server-b",
-      ],
       "ref": "v2.0.0",
       "skillPath": "skills/advanced-skill/SKILL.md",
     }
