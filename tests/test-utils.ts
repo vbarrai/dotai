@@ -139,6 +139,10 @@ export function setupScenario() {
     }
   }
 
+  function getSourceDir() {
+    return sourceDir
+  }
+
   function getTargetDir() {
     return targetDir
   }
@@ -196,6 +200,7 @@ export function setupScenario() {
     targetFile,
     targetFiles,
     thenMcpConfig,
+    getSourceDir,
     getTargetDir,
   }
 }
