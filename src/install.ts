@@ -286,7 +286,9 @@ export async function runInstall(args: string[]): Promise<void> {
     if (argAgents) {
       targetAgents = argAgents
     } else if (skipPrompts) {
-      targetAgents = ALL_AGENTS
+      const detected = detectInstalledAgents()
+      const combined = new Set([...detected, ...previousAgents])
+      targetAgents = combined.size > 0 ? [...combined] : ALL_AGENTS
     } else {
       const detected = detectInstalledAgents()
       // Pre-check agents that have any config installed
@@ -324,7 +326,7 @@ export async function runInstall(args: string[]): Promise<void> {
 
     // Determine skills to install and uninstall
     const selectedNames = new Set(selectedSkills.map((s) => s.name))
-    const toInstall = selectedSkills.filter((s) => !installedNames.has(s.name) || true)
+    const toInstall = selectedSkills
     const toUninstall = allSkills.filter(
       (s) => installedNames.has(s.name) && !selectedNames.has(s.name),
     )

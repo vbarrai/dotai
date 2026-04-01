@@ -1,10 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { setupCheckMocks, lockWith, skill } from './check-test-utils.ts'
-
-const { mocks, getLogs } = setupCheckMocks()
-
-vi.mock('picocolors')
-vi.mock('@clack/prompts', () => mocks)
+import { mocks, mockSpawnSync, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -13,11 +8,6 @@ vi.mock('../../src/lock.ts', () => ({
     }),
   getGitHubToken: () => null,
   fetchSkillFolderHash: async () => 'new-hash',
-}))
-
-const mockSpawnSync = vi.fn((..._args: any[]) => ({ status: 0 }))
-vi.mock('child_process', () => ({
-  spawnSync: (...args: any[]) => mockSpawnSync(...args),
 }))
 
 it('should skip updates when user cancels', async () => {

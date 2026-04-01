@@ -11,5 +11,21 @@ export default defineConfig({
       include: ['src/**'],
       reporter: ['text', 'json-summary'],
     },
+    projects: [
+      {
+        test: {
+          name: 'check',
+          include: ['tests/check/**/*.test.ts'],
+          setupFiles: ['tests/check/setup.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'default',
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/check/**/*.test.ts'],
+        },
+      },
+    ],
   },
 })

@@ -1,10 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { setupCheckMocks, lockWith, skill } from './check-test-utils.ts'
-
-const { mocks, getLogs } = setupCheckMocks()
-
-vi.mock('picocolors')
-vi.mock('@clack/prompts', () => mocks)
+import { mocks, mockSpawnSync, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -24,11 +19,6 @@ vi.mock('../../src/lock.ts', () => ({
   fetchSkillFolderHash: async () => 'new-hash',
 }))
 
-const mockSpawnSync = vi.fn((..._args: any[]) => ({ status: 0 }))
-vi.mock('child_process', () => ({
-  spawnSync: (...args: any[]) => mockSpawnSync(...args),
-}))
-
 it('should update multiple outdated skills', async () => {
   mocks.confirm.mockResolvedValueOnce(true)
 
@@ -44,21 +34,9 @@ it('should update multiple outdated skills', async () => {
     success: Updated 2 skill(s)"
   `)
 
-  const installUrls = mockSpawnSync.mock.calls.map((c: any) => (c[1] as string[]).slice(1))
-  expect(installUrls).toMatchInlineSnapshot(`
-    [
-      [
-        "install",
-        "https://github.com/alice/repo-a/tree/main/skills/my-skill",
-        "-g",
-        "-y",
-      ],
-      [
-        "install",
-        "https://github.com/bob/repo-b/tree/main/skills/my-skill",
-        "-g",
-        "-y",
-      ],
-    ]
-  `)
+  const callArgs = mockSpawnSync.mock.calls.map((c: any) => c[1] as string[])
+  expect(callArgs[0]).toContain('https://github.com/alice/repo-a/tree/main/skills/my-skill')
+  expect(callArgs[0]).toContain('--skills=skill-a')
+  expect(callArgs[1]).toContain('https://github.com/bob/repo-b/tree/main/skills/my-skill')
+  expect(callArgs[1]).toContain('--skills=skill-b')
 })

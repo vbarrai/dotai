@@ -1,10 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { setupCheckMocks, lockWith, skill } from './check-test-utils.ts'
-
-const { mocks, getLogs } = setupCheckMocks()
-
-vi.mock('picocolors')
-vi.mock('@clack/prompts', () => mocks)
+import { mocks, mockSpawnSync, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -15,12 +10,8 @@ vi.mock('../../src/lock.ts', () => ({
   fetchSkillFolderHash: async () => 'new-hash',
 }))
 
-const mockSpawnSync = vi.fn((..._args: any[]) => ({ status: 1 }))
-vi.mock('child_process', () => ({
-  spawnSync: (...args: any[]) => mockSpawnSync(...args),
-}))
-
 it('should report failed subprocess update', async () => {
+  mockSpawnSync.mockReturnValue({ status: 1 })
   mocks.confirm.mockResolvedValueOnce(true)
 
   const { runCheck } = await import('../../src/check.ts')

@@ -3,50 +3,32 @@ import type { SkillLockEntry } from '../../src/lock.ts'
 
 export type LogCall = { method: string; args: string[] }
 
-export function setupCheckMocks(): {
-  mocks: {
-    intro: Mock
-    outro: Mock
-    spinner: () => { start: Mock; stop: Mock }
-    log: {
-      info: Mock
-      success: Mock
-      message: Mock
-      warn: Mock
-      error: Mock
-    }
-    confirm: Mock
-    isCancel: Mock
-  }
-  getLogs: () => string
-} {
-  const logs: LogCall[] = []
+const logs: LogCall[] = []
 
-  const mockLog = (method: string) =>
-    vi.fn((...args: any[]) => {
-      logs.push({ method, args: args.map(String) })
-    })
+const mockLog = (method: string) =>
+  vi.fn((...args: any[]) => {
+    logs.push({ method, args: args.map(String) })
+  })
 
-  const mocks = {
-    intro: vi.fn(),
-    outro: vi.fn(),
-    spinner: () => ({ start: vi.fn(), stop: vi.fn() }),
-    log: {
-      info: mockLog('info'),
-      success: mockLog('success'),
-      message: mockLog('message'),
-      warn: mockLog('warn'),
-      error: mockLog('error'),
-    },
-    confirm: vi.fn(async () => false),
-    isCancel: vi.fn(() => false),
-  }
+export const mocks = {
+  intro: vi.fn(),
+  outro: vi.fn(),
+  spinner: () => ({ start: vi.fn(), stop: vi.fn() }),
+  log: {
+    info: mockLog('info'),
+    success: mockLog('success'),
+    message: mockLog('message'),
+    warn: mockLog('warn'),
+    error: mockLog('error'),
+  },
+  confirm: vi.fn(async () => false) as Mock,
+  isCancel: vi.fn(() => false),
+}
 
-  function getLogs(): string {
-    return logs.map((l) => `${l.method}: ${l.args.join(' ')}`).join('\n')
-  }
+export const mockSpawnSync = vi.fn((..._args: any[]) => ({ status: 0 }))
 
-  return { mocks, getLogs }
+export function getLogs(): string {
+  return logs.map((l) => `${l.method}: ${l.args.join(' ')}`).join('\n')
 }
 
 export function lockWith(skills: Record<string, Partial<SkillLockEntry>>): {

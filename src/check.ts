@@ -107,7 +107,7 @@ export async function runCheck(): Promise<void> {
       }
 
       // Re-run install for this skill
-      const installArgs = [process.argv[1]!, 'install', installUrl, '-g', '-y']
+      const installArgs = [process.argv[1]!, 'install', installUrl, '-g', '-y', `--skills=${name}`]
       if (entry.ref) installArgs.push(`--branch=${entry.ref}`)
 
       const result = spawnSync(process.execPath, installArgs, {

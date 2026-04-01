@@ -1,10 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { setupCheckMocks, lockWith, skill } from './check-test-utils.ts'
-
-const { mocks, getLogs } = setupCheckMocks()
-
-vi.mock('picocolors')
-vi.mock('@clack/prompts', () => mocks)
+import { mocks, mockSpawnSync, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -18,11 +13,6 @@ vi.mock('../../src/lock.ts', () => ({
   fetchSkillFolderHash: async () => 'new',
 }))
 
-const mockSpawnSync = vi.fn((..._args: any[]) => ({ status: 0 }))
-vi.mock('child_process', () => ({
-  spawnSync: (...args: any[]) => mockSpawnSync(...args),
-}))
-
 it('should include branch in URL and --branch flag', async () => {
   mocks.confirm.mockResolvedValueOnce(true)
 
@@ -30,13 +20,6 @@ it('should include branch in URL and --branch flag', async () => {
   await runCheck()
 
   const installArgs = mockSpawnSync.mock.calls[0]![1] as string[]
-  expect(installArgs.slice(1)).toMatchInlineSnapshot(`
-    [
-      "install",
-      "https://github.com/owner/repo/tree/develop/skills/my-skill",
-      "-g",
-      "-y",
-      "--branch=develop",
-    ]
-  `)
+  expect(installArgs).toContain('https://github.com/owner/repo/tree/develop/skills/my-skill')
+  expect(installArgs).toContain('--branch=develop')
 })

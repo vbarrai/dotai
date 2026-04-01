@@ -1,10 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { setupCheckMocks, lockWith, skill } from './check-test-utils.ts'
-
-const { mocks, getLogs } = setupCheckMocks()
-
-vi.mock('picocolors')
-vi.mock('@clack/prompts', () => mocks)
+import { mocks, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
