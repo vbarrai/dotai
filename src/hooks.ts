@@ -1,7 +1,10 @@
-import { readFile, writeFile, mkdir } from 'fs/promises'
+import { readFile, writeFile, mkdir, readdir, cp, rm } from 'fs/promises'
 import { join, dirname } from 'path'
 import type { AgentType, HookEvents } from './types.ts'
 import { agents } from './agents.ts'
+
+const AGENTS_DIR = '.agents'
+const HOOKS_SUBDIR = 'hooks'
 
 async function readJsonFile(filePath: string): Promise<Record<string, unknown>> {
   try {
@@ -76,4 +79,38 @@ export async function installHooks(
   }
 
   return { installed, skipped }
+}
+
+/**
+ * Copies companion files (scripts, etc.) from a hook source directory
+ * to .agents/hooks/<hookName>/ in the target project.
+ * Skips hooks.json itself — only companion files are copied.
+ */
+export async function installHookFiles(
+  sourcePath: string,
+  hookName: string,
+  options: { cwd?: string } = {},
+): Promise<boolean> {
+  const cwd = options.cwd || process.cwd()
+  const destDir = join(cwd, AGENTS_DIR, HOOKS_SUBDIR, hookName)
+
+  try {
+    const entries = await readdir(sourcePath, { withFileTypes: true })
+    const companions = entries.filter((e) => e.name !== 'hooks.json')
+
+    if (companions.length === 0) return true
+
+    await rm(destDir, { recursive: true, force: true }).catch(() => {})
+    await mkdir(destDir, { recursive: true })
+
+    for (const entry of companions) {
+      const srcPath = join(sourcePath, entry.name)
+      const destPath = join(destDir, entry.name)
+      await cp(srcPath, destPath, { recursive: true, dereference: true })
+    }
+
+    return true
+  } catch {
+    return false
+  }
 }

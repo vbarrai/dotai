@@ -43,7 +43,7 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - `src/lock.ts` — Lock file management
 - `src/check.ts` — Update checking
 - `src/mcp.ts` — MCP server config install/uninstall and env var translation
-- `src/hooks.ts` — Hooks config install/uninstall (agent-specific event handlers)
+- `src/hooks.ts` — Hooks config install/uninstall (agent-specific event handlers) and companion file copying
 - `tests/test-utils.ts` — Test helpers (`setupScenario`, `skillFile`)
 - `tests/install.test.ts` — E2E tests for install/uninstall
 - `tests/installer.test.ts` — Unit tests for installer
@@ -57,7 +57,7 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 - **Canonical dir**: `.agents/skills/<name>/` — single source of truth for skill files
 - **Agent dirs**: `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.gemini/skills/`, `.amp/skills/` — symlinked to canonical dir
 - **MCP servers**: Defined in `mcps/<name>/mcp.json` directories or root `mcp.json`, merged into agent config files (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `opencode.json` for Open Code)
-- **Hooks**: Defined in `hooks/<name>/hooks.json` directories or root `hooks.json`, merged into agent config files (`.claude/settings.json` for Claude Code, `.cursor/hooks.json` for Cursor)
+- **Hooks**: Defined in `hooks/<name>/hooks.json` directories or root `hooks.json`, merged into agent config files (`.claude/settings.json` for Claude Code, `.cursor/hooks.json` for Cursor). Companion files (scripts, configs) in `hooks/<name>/` are automatically copied to `.agents/hooks/<name>/`
 - **CLI flags**: `-y`/`--yes` (skip prompts), `--skills=a,b` (filter skills), `--agents=claude-code,cursor` (filter agents), `--mcps=mcp1,mcp2` (filter MCP servers), `--hooks=hook1,hook2` (filter hooks)
 
 ## Testing conventions
@@ -99,6 +99,8 @@ tests/
       install-multiple.test.ts           # Multiple hook groups
       install-with-skill.test.ts         # Hooks alongside a SKILL.md
       install-from-dir.test.ts           # Hook from hooks/<name>/hooks.json
+      install-dir-with-files.test.ts     # Hook dir with companion scripts
+      install-dir-no-files.test.ts       # Hook dir without companion files
       install-merge.test.ts              # Sequential installs merge hooks
       install-skip-duplicate.test.ts     # Duplicate handlers not added twice
   cursor/
@@ -118,6 +120,7 @@ tests/
       install-multiple.test.ts           # Multiple hook groups
       install-with-skill.test.ts         # Hooks alongside a SKILL.md
       install-from-dir.test.ts           # Hook from hooks/<name>/hooks.json
+      install-dir-with-files.test.ts     # Hook dir with companion scripts
       install-merge.test.ts              # Sequential installs merge hooks
       install-skip-duplicate.test.ts     # Duplicate handlers not added twice
   open-code/
@@ -152,7 +155,7 @@ describeConfai("cursor / install single MCP", ({ givenSource, when, targetFile, 
 
 ### Helpers (`describeConfai` provides)
 
-- `givenSource({ skills?, mcps?, mcpDirs?, hooks?, hookDirs? })` — creates source fixtures (skills with SKILL.md, root mcp.json, mcps/<name>/mcp.json dirs, root hooks.json, hooks/<name>/hooks.json dirs)
+- `givenSource({ skills?, mcps?, mcpDirs?, hooks?, hookDirs?, hookDirFiles? })` — creates source fixtures (skills with SKILL.md, root mcp.json, mcps/<name>/mcp.json dirs, root hooks.json, hooks/<name>/hooks.json dirs, companion files in hook dirs)
 - `givenSkill(...names)` — shorthand for skills without MCP
 - `when({ skills?, agents?, mcps?, hooks?, extraArgs? })` — runs the CLI with `-y` flag
 - `targetFiles()` — returns sorted list of all files in target dir

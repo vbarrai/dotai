@@ -150,20 +150,33 @@ export async function discoverHooks(basePath: string): Promise<Record<string, Ho
   return (await parseHooksJson(basePath)) ?? {}
 }
 
+export interface DiscoveredHookDir {
+  group: HookGroup
+  dirPath: string
+}
+
 /**
  * Discovers hook groups from hooks/<name>/hooks.json directories.
  * Each subdirectory under hooks/ can contain its own hooks.json.
+ * Returns the hook group along with the source directory path (for companion file copying).
  */
-export async function discoverHookDirs(basePath: string): Promise<Record<string, HookGroup>> {
+export async function discoverHookDirs(
+  basePath: string,
+): Promise<Record<string, DiscoveredHookDir>> {
   const hooksDir = join(basePath, 'hooks')
-  const result: Record<string, HookGroup> = {}
+  const result: Record<string, DiscoveredHookDir> = {}
 
   try {
     const entries = await readdir(hooksDir, { withFileTypes: true })
     for (const entry of entries) {
       if (!entry.isDirectory() || SKIP_DIRS.has(entry.name)) continue
-      const groups = await parseHooksJson(join(hooksDir, entry.name))
-      if (groups) Object.assign(result, groups)
+      const dirPath = join(hooksDir, entry.name)
+      const groups = await parseHooksJson(dirPath)
+      if (groups) {
+        for (const [name, group] of Object.entries(groups)) {
+          result[name] = { group, dirPath }
+        }
+      }
     }
   } catch {
     // hooks/ directory doesn't exist

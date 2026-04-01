@@ -9,7 +9,7 @@
             "hooks": [
               {
                 "type": "command",
-                "command": "echo 'Checking for dangerous commands...'"
+                "command": ".agents/hooks/block-dangerous-commands/check.sh"
               }
             ]
           }
@@ -22,7 +22,7 @@
             "hooks": [
               {
                 "type": "command",
-                "command": "echo 'Validating shell script...'"
+                "command": ".agents/hooks/block-dangerous-commands/check.sh"
               }
             ]
           }

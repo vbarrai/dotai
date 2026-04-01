@@ -15,7 +15,7 @@ import { agents, detectInstalledAgents } from './agents.ts'
 import { readLock, addToLock, addMcpToLock, addHookToLock, removeFromLock } from './lock.ts'
 import { getOwnerRepo } from './source-parser.ts'
 import { installMcpServers, listInstalledMcpServerNames } from './mcp.ts'
-import { installHooks } from './hooks.ts'
+import { installHooks, installHookFiles } from './hooks.ts'
 import type { Skill, AgentType, McpServerConfig, HookGroup } from './types.ts'
 
 const ALL_AGENTS: AgentType[] = ['claude-code', 'cursor', 'codex', 'open-code']
@@ -220,13 +220,14 @@ export async function runInstall(args: string[]): Promise<void> {
       groupName: string
       source: string
       group: HookGroup
+      dirPath?: string
     }
     const allHookEntries: HookEntry[] = []
     for (const [groupName, group] of Object.entries(rootHooks)) {
       allHookEntries.push({ groupName, source: 'hooks.json', group })
     }
-    for (const [groupName, group] of Object.entries(dirHooks)) {
-      allHookEntries.push({ groupName, source: `hooks/${groupName}`, group })
+    for (const [groupName, { group, dirPath }] of Object.entries(dirHooks)) {
+      allHookEntries.push({ groupName, source: `hooks/${groupName}`, group, dirPath })
     }
 
     // Select hooks
@@ -481,6 +482,11 @@ export async function runInstall(args: string[]): Promise<void> {
     if (hasSelectedHooks) {
       spinner.start('Installing hooks...')
       for (const entry of selectedHookGroups) {
+        // Copy companion files (scripts, etc.) from hook directory
+        if (entry.dirPath) {
+          await installHookFiles(entry.dirPath, entry.groupName)
+        }
+
         for (const agent of targetAgents) {
           const agentKey = agent as keyof HookGroup
           const hookEvents = entry.group[agentKey]

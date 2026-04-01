@@ -67,11 +67,12 @@ cat .mcp.json                        # github + brave-search + linear
 rm -rf .agents .claude .cursor .codex .mcp.json ai-lock.json
 ```
 
-### 3. Hooks only
+### 3. Hooks only (with companion scripts)
 
 ```bash
 $CLI install ../../providers/hooks-only-repo -y --agents=claude-code
 cat .claude/settings.json             # PreToolUse + PostToolUse
+ls .agents/hooks/block-dangerous-commands/  # check.sh (companion script auto-copied)
 rm -rf .agents .claude .cursor .codex ai-lock.json
 ```
 
