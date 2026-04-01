@@ -150,7 +150,7 @@ export async function discoverHooks(basePath: string): Promise<Record<string, Ho
   return (await parseHooksJson(basePath)) ?? {}
 }
 
-export interface DiscoveredHookDir {
+interface DiscoveredHookDir {
   group: HookGroup
   dirPath: string
 }
