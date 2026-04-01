@@ -9,15 +9,10 @@ describeConfai(
         hookDirs: {
           'security-guard': {
             cursor: {
-              PreToolUse: [
+              preToolUse: [
                 {
-                  matcher: 'Bash|Edit|Write',
-                  hooks: [
-                    {
-                      type: 'command',
-                      command: '.agents/hooks/security-guard/security-guard.sh',
-                    },
-                  ],
+                  command: '.agents/hooks/security-guard/security-guard.sh',
+                  matcher: 'Shell|Edit|Write',
                 },
               ],
             },
@@ -38,6 +33,21 @@ describeConfai(
           ".cursor/hooks.json",
           "ai-lock.json",
         ]
+      `)
+
+      expect(await targetFile('.cursor/hooks.json')).toMatchInlineSnapshot(`
+        "{
+          "version": 1,
+          "hooks": {
+            "preToolUse": [
+              {
+                "command": ".agents/hooks/security-guard/security-guard.sh",
+                "matcher": "Shell|Edit|Write"
+              }
+            ]
+          }
+        }
+        "
       `)
 
       expect(await targetFile('.agents/hooks/security-guard/security-guard.sh'))
