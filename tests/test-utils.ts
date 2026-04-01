@@ -49,6 +49,16 @@ export const hookBlockRm: Record<string, HookGroup> = {
   },
 }
 
+export const hookBlockRmClaudeCode: Record<string, HookGroup> = {
+  'block-rm': {
+    'claude-code': {
+      PreToolUse: [
+        { matcher: 'Bash', hooks: [{ type: 'command', command: '.claude/hooks/block-rm.sh' }] },
+      ],
+    },
+  },
+}
+
 export const hookBlockRmCursor: Record<string, HookGroup> = {
   'block-rm': {
     cursor: {

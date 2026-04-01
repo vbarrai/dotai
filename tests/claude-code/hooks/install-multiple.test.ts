@@ -1,5 +1,5 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmClaudeCode } from '../../test-utils.ts'
 
 describeConfai(
   'claude-code / install multiple hooks',
@@ -7,16 +7,7 @@ describeConfai(
     it('should install multiple hook groups into settings.json', async () => {
       await givenSource({
         hooks: {
-          'block-rm': {
-            'claude-code': {
-              PreToolUse: [
-                {
-                  matcher: 'Bash',
-                  hooks: [{ type: 'command', command: '.claude/hooks/block-rm.sh' }],
-                },
-              ],
-            },
-          },
+          ...hookBlockRmClaudeCode,
           'lint-on-edit': {
             'claude-code': {
               PostToolUse: [

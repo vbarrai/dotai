@@ -1,19 +1,11 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmCursor } from '../../test-utils.ts'
 
 describeConfai(
   'cursor / merge hooks across installs',
   ({ givenSource, whenInstall, targetFile }) => {
     it('second install appends new hooks without removing existing ones', async () => {
-      await givenSource({
-        hooks: {
-          'block-rm': {
-            cursor: {
-              beforeShellExecution: [{ command: '.cursor/hooks/block-rm.sh', matcher: '^rm ' }],
-            },
-          },
-        },
-      })
+      await givenSource({ hooks: hookBlockRmCursor })
 
       await whenInstall({ hooks: ['block-rm'], agents: ['cursor'] })
 

@@ -1,24 +1,11 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmClaudeCode } from '../../test-utils.ts'
 
 describeConfai(
   'claude-code / install hook from hooks/ directory',
   ({ givenSource, sourceFiles, whenInstall, targetFile, targetHasFiles }) => {
     it('should install a hook from hooks/<name>/hooks.json', async () => {
-      await givenSource({
-        hookDirs: {
-          'block-rm': {
-            'claude-code': {
-              PreToolUse: [
-                {
-                  matcher: 'Bash',
-                  hooks: [{ type: 'command', command: '.claude/hooks/block-rm.sh' }],
-                },
-              ],
-            },
-          },
-        },
-      })
+      await givenSource({ hookDirs: hookBlockRmClaudeCode })
 
       expect(await sourceFiles()).toMatchInlineSnapshot(`
         [

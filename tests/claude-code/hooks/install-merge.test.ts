@@ -1,24 +1,11 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmClaudeCode } from '../../test-utils.ts'
 
 describeConfai(
   'claude-code / merge hooks across installs',
   ({ givenSource, whenInstall, targetFile }) => {
     it('second install appends new hooks without removing existing ones', async () => {
-      await givenSource({
-        hooks: {
-          'block-rm': {
-            'claude-code': {
-              PreToolUse: [
-                {
-                  matcher: 'Bash',
-                  hooks: [{ type: 'command', command: '.claude/hooks/block-rm.sh' }],
-                },
-              ],
-            },
-          },
-        },
-      })
+      await givenSource({ hooks: hookBlockRmClaudeCode })
 
       await whenInstall({ hooks: ['block-rm'], agents: ['claude-code'] })
 

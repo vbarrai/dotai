@@ -10,7 +10,14 @@ const mockLog = (method: string) =>
     logs.push({ method, args: args.map(String) })
   })
 
-export const mocks = {
+export const mocks: {
+  intro: Mock
+  outro: Mock
+  spinner: () => { start: Mock; stop: Mock }
+  log: { info: Mock; success: Mock; message: Mock; warn: Mock; error: Mock }
+  confirm: Mock
+  isCancel: Mock
+} = {
   intro: vi.fn(),
   outro: vi.fn(),
   spinner: () => ({ start: vi.fn(), stop: vi.fn() }),

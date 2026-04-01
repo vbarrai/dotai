@@ -1,19 +1,11 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmCursor } from '../../test-utils.ts'
 
 describeConfai(
   'cursor / skip duplicate hook handlers',
   ({ givenSource, whenInstall, targetFile }) => {
     it('does not duplicate identical handlers on reinstall', async () => {
-      await givenSource({
-        hooks: {
-          'block-rm': {
-            cursor: {
-              beforeShellExecution: [{ command: '.cursor/hooks/block-rm.sh', matcher: '^rm ' }],
-            },
-          },
-        },
-      })
+      await givenSource({ hooks: hookBlockRmCursor })
 
       await whenInstall({ hooks: ['block-rm'], agents: ['cursor'] })
       await whenInstall({ hooks: ['block-rm'], agents: ['cursor'] })

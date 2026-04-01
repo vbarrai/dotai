@@ -1,19 +1,11 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmCursor } from '../../test-utils.ts'
 
 describeConfai(
   'cursor / install single hook',
   ({ givenSource, sourceFiles, whenInstall, targetFile, targetHasFiles }) => {
     it('should install a simple hook into hooks.json', async () => {
-      await givenSource({
-        hooks: {
-          'block-rm': {
-            cursor: {
-              beforeShellExecution: [{ command: '.cursor/hooks/block-rm.sh', matcher: '^rm ' }],
-            },
-          },
-        },
-      })
+      await givenSource({ hooks: hookBlockRmCursor })
 
       expect(await sourceFiles()).toMatchInlineSnapshot(`
       [

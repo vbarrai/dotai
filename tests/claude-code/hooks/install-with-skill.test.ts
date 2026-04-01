@@ -1,5 +1,5 @@
 import { it, expect } from 'vitest'
-import { describeConfai } from '../../test-utils.ts'
+import { describeConfai, hookBlockRmClaudeCode } from '../../test-utils.ts'
 
 describeConfai(
   'claude-code / hooks alongside a skill',
@@ -7,18 +7,7 @@ describeConfai(
     it('installs both skill files and hooks config', async () => {
       await givenSource({
         skills: [{ name: 'dev-tools' }],
-        hooks: {
-          'block-rm': {
-            'claude-code': {
-              PreToolUse: [
-                {
-                  matcher: 'Bash',
-                  hooks: [{ type: 'command', command: '.claude/hooks/block-rm.sh' }],
-                },
-              ],
-            },
-          },
-        },
+        hooks: hookBlockRmClaudeCode,
       })
 
       await whenInstall({
