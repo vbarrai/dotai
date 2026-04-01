@@ -31,6 +31,7 @@ rm -rf .agents .claude .cursor .codex .confai-lock.json
 $CLI install ../../providers/hooks-only-repo -y --agents=claude-code,cursor
 cat .claude/settings.json             # Claude Code hooks
 cat .cursor/hooks.json                # Cursor hooks
+ls .agents/hooks/block-dangerous-commands/  # check.sh (companion script)
 
 # Cleanup
 rm -rf .agents .claude .cursor .codex

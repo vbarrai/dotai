@@ -8,6 +8,7 @@ Provider repository focused on **distributing hooks only** (no skills or MCP ser
 hooks/
   block-dangerous-commands/
     hooks.json            # Prevents rm -rf and other destructive commands
+    check.sh              # Companion script (copied to .agents/hooks/)
   auto-format/
     hooks.json            # Auto-formats code after edits
 ```
@@ -16,6 +17,7 @@ hooks/
 
 - A provider with only hook configurations (no skills or MCPs)
 - Each hook group in its own `hooks/<name>/hooks.json` directory
+- **Companion files** (scripts, configs) alongside `hooks.json` are automatically copied to `.agents/hooks/<name>/`
 - Agent-specific hook definitions (claude-code vs cursor have different events)
 - The `--hooks` flag to selectively install hook groups
 

@@ -56,6 +56,7 @@ export function setupScenario() {
     mcpDirs?: Record<string, McpServerConfig>
     hooks?: Record<string, HookGroup>
     hookDirs?: Record<string, HookGroup>
+    hookDirFiles?: Record<string, Record<string, string>>
   }) {
     const files: FileTree = {}
 
@@ -84,6 +85,14 @@ export function setupScenario() {
     if (opts.hookDirs) {
       for (const [name, group] of Object.entries(opts.hookDirs)) {
         files[`./hooks/${name}/hooks.json`] = JSON.stringify({ hooks: { [name]: group } }, null, 2)
+      }
+    }
+
+    if (opts.hookDirFiles) {
+      for (const [hookName, hookFiles] of Object.entries(opts.hookDirFiles)) {
+        for (const [fileName, content] of Object.entries(hookFiles)) {
+          files[`./hooks/${hookName}/${fileName}`] = content
+        }
       }
     }
 
