@@ -450,6 +450,7 @@ export async function runInstall(args: string[]): Promise<void> {
             skillPath: skillRelPath,
             ref: parsed.ref,
             skillFolderHash,
+            agents: targetAgents,
           })
         }
       }

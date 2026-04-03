@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { mocks, mockSpawnSync, getLogs, lockWith, skill } from './check-test-utils.ts'
+import { mocks, mockCloneRepo, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -23,5 +23,5 @@ it('should skip updates when user cancels', async () => {
     message:   * outdated-skill (owner/repo)
     info: Skipped updates."
   `)
-  expect(mockSpawnSync).not.toHaveBeenCalled()
+  expect(mockCloneRepo).not.toHaveBeenCalled()
 })

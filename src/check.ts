@@ -1,10 +1,24 @@
 import * as p from '@clack/prompts'
 import pc from 'picocolors'
-import { spawnSync } from 'child_process'
-import { readLock, fetchSkillFolderHash, getGitHubToken } from './lock.ts'
+import { existsSync } from 'fs'
+import { join } from 'path'
+import { parseSource, getOwnerRepo } from './source-parser.ts'
+import { cloneRepo, cleanupTempDir, getTreeHash } from './git.ts'
+import { discoverSkills } from './skills.ts'
+import { installSkill } from './installer.ts'
+import { readLock, addToLock, fetchSkillFolderHash, getGitHubToken } from './lock.ts'
+import { agents } from './agents.ts'
 import type { SkillLockEntry } from './lock.ts'
+import type { AgentType } from './types.ts'
 
-export async function runCheck(): Promise<void> {
+const ALL_AGENTS: AgentType[] = ['claude-code', 'cursor', 'codex', 'open-code']
+
+function detectAgentsForSkill(skillName: string): AgentType[] {
+  return ALL_AGENTS.filter((a) => existsSync(join(agents[a].skillsDir, skillName)))
+}
+
+export async function runCheck(args: string[] = [], opts: { autoUpdate?: boolean } = {}): Promise<void> {
+  const skipPrompts = opts.autoUpdate || args.includes('-y') || args.includes('--yes')
   console.log()
   p.intro(pc.bgCyan(pc.black(' maconfai check ')))
 
@@ -73,53 +87,107 @@ export async function runCheck(): Promise<void> {
       p.log.message(`  ${pc.yellow('*')} ${u.name} ${pc.dim(`(${u.entry.source})`)}`)
     }
 
-    console.log()
-    const confirmed = await p.confirm({
-      message: `Install ${updates.length} update(s)?`,
-    })
+    if (!skipPrompts) {
+      console.log()
+      const confirmed = await p.confirm({
+        message: `Install ${updates.length} update(s)?`,
+      })
 
-    if (p.isCancel(confirmed) || !confirmed) {
-      p.log.info('Skipped updates.')
-      p.outro('')
-      return
+      if (p.isCancel(confirmed) || !confirmed) {
+        p.log.info('Skipped updates.')
+        p.outro('')
+        return
+      }
     }
 
-    // Update each skill
+    // Group updates by source to avoid cloning the same repo multiple times
+    const updatesBySource = new Map<string, Array<{ name: string; entry: SkillLockEntry }>>()
+    for (const update of updates) {
+      const key = `${update.entry.sourceUrl}|${update.entry.ref || ''}`
+      if (!updatesBySource.has(key)) updatesBySource.set(key, [])
+      updatesBySource.get(key)!.push(update)
+    }
+
     const updateSpinner = p.spinner()
     updateSpinner.start('Updating skills...')
 
     let successCount = 0
     let failCount = 0
 
-    for (const { name, entry } of updates) {
-      // Build install URL from source
-      let installUrl = entry.sourceUrl.replace(/\.git$/, '').replace(/\/$/, '')
-      const branch = entry.ref || 'main'
+    for (const [, sourceUpdates] of updatesBySource) {
+      const { entry: firstEntry } = sourceUpdates[0]!
+      const parsed = parseSource(firstEntry.sourceUrl)
+      if (firstEntry.ref) parsed.ref = firstEntry.ref
 
-      // Add subpath if available
-      if (entry.skillPath) {
-        let skillFolder = entry.skillPath
-        if (skillFolder.endsWith('/SKILL.md')) skillFolder = skillFolder.slice(0, -9)
-        else if (skillFolder.endsWith('SKILL.md')) skillFolder = skillFolder.slice(0, -8)
-        if (skillFolder.endsWith('/')) skillFolder = skillFolder.slice(0, -1)
+      let skillsDir: string
+      let tempDir: string | null = null
 
-        installUrl = `${installUrl}/tree/${branch}/${skillFolder}`
-      }
+      try {
+        if (parsed.type === 'local') {
+          skillsDir = parsed.localPath!
+        } else {
+          tempDir = await cloneRepo(parsed.url, parsed.ref)
+          skillsDir = tempDir
+        }
 
-      // Re-run install for this skill
-      const installArgs = [process.argv[1]!, 'install', installUrl, '-g', '-y', `--skills=${name}`]
-      if (entry.ref) installArgs.push(`--branch=${entry.ref}`)
+        const discoveredSkills = await discoverSkills(skillsDir)
 
-      const result = spawnSync(process.execPath, installArgs, {
-        stdio: ['inherit', 'pipe', 'pipe'],
-      })
+        for (const { name, entry } of sourceUpdates) {
+          const skill = discoveredSkills.find((s) => s.name === name)
+          if (!skill) {
+            failCount++
+            p.log.error(`Skill ${name} not found in source`)
+            continue
+          }
 
-      if (result.status === 0) {
-        successCount++
-        p.log.success(`Updated ${name}`)
-      } else {
-        failCount++
-        p.log.error(`Failed to update ${name}`)
+          const skillAgents = (
+            entry.agents?.length ? entry.agents : detectAgentsForSkill(name)
+          ) as AgentType[]
+
+          let skillSuccess = false
+          for (const agent of skillAgents) {
+            const result = await installSkill(skill, agent, { global: false })
+            if (result.success) {
+              skillSuccess = true
+            } else {
+              p.log.error(
+                `Failed: ${name} -> ${agents[agent].displayName}: ${result.error}`,
+              )
+            }
+          }
+
+          if (skillSuccess) {
+            const skillRelPath = entry.skillPath || `skills/${name}`
+            let skillFolderHash = ''
+            try {
+              skillFolderHash = await getTreeHash(skillsDir, skillRelPath)
+            } catch {}
+
+            const ownerRepo = getOwnerRepo(parsed)
+            await addToLock(name, {
+              source: ownerRepo || entry.source,
+              sourceUrl: entry.sourceUrl,
+              skillPath: skillRelPath,
+              ref: entry.ref,
+              skillFolderHash,
+              agents: skillAgents,
+            })
+
+            successCount++
+            p.log.success(`Updated ${name}`)
+          } else {
+            failCount++
+          }
+        }
+      } catch (err) {
+        for (const { name } of sourceUpdates) {
+          failCount++
+          p.log.error(
+            `Failed to update ${name}: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
+      } finally {
+        if (tempDir) await cleanupTempDir(tempDir).catch(() => {})
       }
     }
 

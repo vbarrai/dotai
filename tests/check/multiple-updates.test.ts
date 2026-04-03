@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { mocks, mockSpawnSync, getLogs, lockWith, skill } from './check-test-utils.ts'
+import { mocks, mockCloneRepo, mockDiscoverSkills, mockInstallSkill, mockAddToLock, getLogs, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -17,9 +17,17 @@ vi.mock('../../src/lock.ts', () => ({
     }),
   getGitHubToken: () => null,
   fetchSkillFolderHash: async () => 'new-hash',
+  addToLock: (name: string, entry: unknown, cwd?: string) => mockAddToLock(name, entry, cwd),
 }))
 
 it('should update multiple outdated skills', async () => {
+  mockDiscoverSkills
+    .mockResolvedValueOnce([
+      { name: 'skill-a', description: 'Skill A', dir: '/tmp/mock/skills/skill-a' },
+    ])
+    .mockResolvedValueOnce([
+      { name: 'skill-b', description: 'Skill B', dir: '/tmp/mock/skills/skill-b' },
+    ])
   mocks.confirm.mockResolvedValueOnce(true)
 
   const { runCheck } = await import('../../src/check.ts')
@@ -34,9 +42,7 @@ it('should update multiple outdated skills', async () => {
     success: Updated 2 skill(s)"
   `)
 
-  const callArgs = mockSpawnSync.mock.calls.map((c: any) => c[1] as string[])
-  expect(callArgs[0]).toContain('https://github.com/alice/repo-a/tree/main/skills/my-skill')
-  expect(callArgs[0]).toContain('--skills=skill-a')
-  expect(callArgs[1]).toContain('https://github.com/bob/repo-b/tree/main/skills/my-skill')
-  expect(callArgs[1]).toContain('--skills=skill-b')
+  // Two different sources → two cloneRepo calls
+  expect(mockCloneRepo).toHaveBeenCalledTimes(2)
+  expect(mockInstallSkill).toHaveBeenCalledTimes(2)
 })

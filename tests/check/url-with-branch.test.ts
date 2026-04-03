@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { mocks, mockSpawnSync, lockWith, skill } from './check-test-utils.ts'
+import { mocks, mockCloneRepo, mockDiscoverSkills, mockInstallSkill, mockAddToLock, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -11,15 +11,18 @@ vi.mock('../../src/lock.ts', () => ({
     }),
   getGitHubToken: () => null,
   fetchSkillFolderHash: async () => 'new',
+  addToLock: (name: string, entry: unknown, cwd?: string) => mockAddToLock(name, entry, cwd),
 }))
 
-it('should include branch in URL and --branch flag', async () => {
+it('should clone with the correct ref', async () => {
+  mockDiscoverSkills.mockResolvedValueOnce([
+    { name: 'branched', description: 'A skill', dir: '/tmp/mock/skills/branched' },
+  ])
   mocks.confirm.mockResolvedValueOnce(true)
 
   const { runCheck } = await import('../../src/check.ts')
   await runCheck()
 
-  const installArgs = mockSpawnSync.mock.calls[0]![1] as string[]
-  expect(installArgs).toContain('https://github.com/owner/repo/tree/develop/skills/my-skill')
-  expect(installArgs).toContain('--branch=develop')
+  expect(mockCloneRepo).toHaveBeenCalledWith('https://github.com/owner/repo', 'develop')
+  expect(mockInstallSkill).toHaveBeenCalled()
 })
