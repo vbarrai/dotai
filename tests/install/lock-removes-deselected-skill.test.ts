@@ -2,21 +2,30 @@ import { it, expect } from 'vitest'
 import { describeConfai } from '../test-utils.ts'
 
 describeConfai(
-  'install / lock preserves skills not in --skills filter',
+  'install / lock removes deselected skills',
   ({ givenSkill, whenInstall, targetFile }) => {
-    it('should keep all skills in lock when --skills filters a subset', async () => {
-      await givenSkill('keep', 'other')
+    it('should remove skill from lock when deselected', async () => {
+      await givenSkill('keep', 'drop')
 
       await whenInstall({ agents: ['claude-code'] })
 
       const lockBefore = JSON.parse(await targetFile('ai-lock.json'))
-      expect(Object.keys(lockBefore.skills).sort()).toEqual(['keep', 'other'])
+      expect(Object.keys(lockBefore.skills).sort()).toMatchInlineSnapshot(`
+        [
+          "drop",
+          "keep",
+        ]
+      `)
 
-      // Re-install with --skills=keep — 'other' should remain in lock
+      // Re-install without 'drop'
       await whenInstall({ skills: ['keep'], agents: ['claude-code'] })
 
       const lockAfter = JSON.parse(await targetFile('ai-lock.json'))
-      expect(Object.keys(lockAfter.skills).sort()).toEqual(['keep', 'other'])
+      expect(Object.keys(lockAfter.skills)).toMatchInlineSnapshot(`
+        [
+          "keep",
+        ]
+      `)
     })
   },
 )

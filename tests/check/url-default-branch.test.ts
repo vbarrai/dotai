@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { mocks, mockSpawnSync, lockWith, skill } from './check-test-utils.ts'
+import { mocks, mockCloneRepo, mockDiscoverSkills, mockInstallSkill, mockAddToLock, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -11,15 +11,18 @@ vi.mock('../../src/lock.ts', () => ({
     }),
   getGitHubToken: () => null,
   fetchSkillFolderHash: async () => 'new',
+  addToLock: (name: string, entry: unknown, cwd?: string) => mockAddToLock(name, entry, cwd),
 }))
 
-it('should use main as default branch when no ref', async () => {
+it('should clone without ref when no ref in lock entry', async () => {
+  mockDiscoverSkills.mockResolvedValueOnce([
+    { name: 'no-ref', description: 'A skill', dir: '/tmp/mock/skills/no-ref' },
+  ])
   mocks.confirm.mockResolvedValueOnce(true)
 
   const { runCheck } = await import('../../src/check.ts')
   await runCheck()
 
-  const installArgs = mockSpawnSync.mock.calls[0]![1] as string[]
-  expect(installArgs).toContain('https://github.com/owner/repo/tree/main/skills/my-skill')
-  expect(installArgs).not.toContain(expect.stringContaining('--branch'))
+  expect(mockCloneRepo).toHaveBeenCalledWith('https://github.com/owner/repo', undefined)
+  expect(mockInstallSkill).toHaveBeenCalled()
 })

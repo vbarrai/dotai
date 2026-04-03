@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { mocks, mockSpawnSync, lockWith, skill } from './check-test-utils.ts'
+import { mocks, mockDiscoverSkills, mockInstallSkill, mockAddToLock, lockWith, skill } from './check-test-utils.ts'
 
 vi.mock('../../src/lock.ts', () => ({
   readLock: async () =>
@@ -12,16 +12,19 @@ vi.mock('../../src/lock.ts', () => ({
     }),
   getGitHubToken: () => null,
   fetchSkillFolderHash: async () => 'new',
+  addToLock: (name: string, entry: unknown, cwd?: string) => mockAddToLock(name, entry, cwd),
 }))
 
-it('should reconstruct full URL with skill path', async () => {
+it('should discover and install the correct skill by name', async () => {
+  mockDiscoverSkills.mockResolvedValueOnce([
+    { name: 'deep-skill', description: 'A skill', dir: '/tmp/mock/skills/deep-skill' },
+    { name: 'other-skill', description: 'Another', dir: '/tmp/mock/skills/other-skill' },
+  ])
   mocks.confirm.mockResolvedValueOnce(true)
 
   const { runCheck } = await import('../../src/check.ts')
   await runCheck()
 
-  const installArgs = mockSpawnSync.mock.calls[0]![1] as string[]
-  expect(installArgs).toContain('https://github.com/owner/repo/tree/main/skills/my-skill')
-  expect(installArgs).toContain('--skills=deep-skill')
-  expect(installArgs).toContain('--branch=main')
+  expect(mockInstallSkill).toHaveBeenCalledTimes(1)
+  expect((mockInstallSkill.mock.calls[0]![0] as any).name).toBe('deep-skill')
 })
