@@ -68,12 +68,12 @@ npx maconfai install
 
 ## Supported agents
 
-| Agent       | Skills | MCP servers | Hooks | Skills dir          | MCP config         |
-| :---------- | :----: | :---------: | :---: | :------------------ | :----------------- |
-| Claude Code |   ✅   |     ✅      |  ✅   | `.claude/skills/`   | `.mcp.json`        |
-| Cursor      |   ✅   |     ✅      |  ✅   | `.cursor/skills/`   | `.cursor/mcp.json` |
+| Agent       | Skills | MCP servers | Hooks | Skills dir          | MCP config           |
+| :---------- | :----: | :---------: | :---: | :------------------ | :------------------- |
+| Claude Code |   ✅   |     ✅      |  ✅   | `.claude/skills/`   | `.mcp.json`          |
+| Cursor      |   ✅   |     ✅      |  ✅   | `.cursor/skills/`   | `.cursor/mcp.json`   |
 | Codex       |   ✅   |     ✅      |   —   | `.codex/skills/`    | `.codex/config.toml` |
-| Open Code   |   ✅   |     ✅      |   —   | `.opencode/skills/` | `opencode.json`    |
+| Open Code   |   ✅   |     ✅      |   —   | `.opencode/skills/` | `opencode.json`      |
 
 Canonical location: `.agents/skills/` (agent dirs are symlinked to this).
 
