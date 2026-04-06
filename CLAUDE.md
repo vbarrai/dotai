@@ -53,7 +53,7 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 ## Key concepts
 
 - **Agents**: `claude-code`, `cursor`, `codex`, `gemini-cli`, `amp-code`, `open-code` (type `AgentType`)
-- **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory
+- **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory. Fallback: if no `skills/` directory exists, a root `SKILL.md` is used (single-skill repos)
 - **Canonical dir**: `.agents/skills/<name>/` — single source of truth for skill files
 - **Agent dirs**: `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.gemini/skills/`, `.amp/skills/` — symlinked to canonical dir
 - **MCP servers**: Defined in `mcps/<name>/mcp.json` directories or root `mcp.json`, merged into agent config files (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `opencode.json` for Open Code)
