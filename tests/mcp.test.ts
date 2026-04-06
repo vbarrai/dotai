@@ -152,13 +152,13 @@ describe('installMcpServers', () => {
     expect(content.mcpServers.github.args).toEqual(['old.js'])
   })
 
-  it('skips agents without mcpConfigPath', async () => {
+  it('installs to codex in TOML format', async () => {
     const servers: Record<string, McpServerConfig> = {
       github: { command: 'npx', args: ['-y', '@mcp/github'] },
     }
     const result = await installMcpServers(servers, 'codex', { cwd: tempDir })
-    expect(result.installed).toEqual([])
-    expect(result.skipped).toEqual(['github'])
+    expect(result.installed).toEqual(['github'])
+    expect(result.skipped).toEqual([])
   })
 })
 

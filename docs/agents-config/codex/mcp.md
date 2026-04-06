@@ -1,4 +1,4 @@
-> **maconfai support: Not supported** — MCP configuration is not managed by maconfai. Reference only.
+> **maconfai support: Supported** — MCP server installation for Codex is fully implemented with JSON-to-TOML format translation.
 
 # OpenAI Codex — MCP Servers Guide
 
@@ -10,7 +10,7 @@
 [mcp_servers.github]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-github"]
-env = { GITHUB_TOKEN = "ghp_..." }
+env = { GITHUB_TOKEN = "${GITHUB_TOKEN}" }
 cwd = "."                        # Working directory (optional)
 startup_timeout_sec = 10
 tool_timeout_sec = 60
