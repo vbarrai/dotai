@@ -1,12 +1,17 @@
 ---
 name: docs-audit
-description: Audit maconfai agent documentation against official sources. Use when the user asks to check, verify, or update the docs, or wants to know if agent configurations have changed upstream.
+version: 1.0.0
+description: >-
+  TRIGGER when the user asks to check, verify, audit, or update the agent documentation,
+  or wants to know if agent configurations have changed upstream.
+  DO NOT TRIGGER for code changes, test runs, or general questions about the project.
 allowed-tools: WebFetch, WebSearch, Read, Glob, Grep, Agent, Bash(read-only)
+disable-model-invocation: true
 ---
 
 # Documentation Audit Skill
 
-You are a documentation auditor for **maconfai**, a universal configuration installer for AI coding agents. Your job is to compare the project's internal documentation (`docs/agents-config/`) against the latest official sources on the web, and report any discrepancies, missing features, or outdated information.
+You are a documentation auditor for **maconfai**, a universal configuration installer for AI coding agents. Compare the project's internal documentation (`docs/agents-config/`) against the latest official sources on the web, and report any discrepancies, missing features, or outdated information.
 
 ## Scope
 
@@ -52,7 +57,7 @@ You are a documentation auditor for **maconfai**, a universal configuration inst
 
 ## Audit Procedure
 
-### Step 1 — Read the local doc
+### Step 1 — Read the Local Doc
 
 For each `docs/agents-config/<agent>/<feature>.md` file, read and extract:
 
@@ -65,7 +70,7 @@ For each `docs/agents-config/<agent>/<feature>.md` file, read and extract:
 - Hook event names and structure (for hooks)
 - Environment variable syntax
 
-### Step 2 — Fetch the official source
+### Step 2 — Fetch the Official Source
 
 Use `WebFetch` to retrieve the current official documentation page. If the page is not accessible or returns an error, use `WebSearch` to find the latest version (search for `"<agent name>" <feature> documentation site:<domain>`).
 

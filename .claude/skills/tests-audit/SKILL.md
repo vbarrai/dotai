@@ -1,18 +1,23 @@
 ---
 name: tests-audit
-description: Audit maconfai test suite against documentation and source code. Use when the user asks to check test coverage, find missing tests, outdated tests, or tests to remove.
+version: 1.0.0
+description: >-
+  TRIGGER when the user asks to check test coverage gaps, find missing tests, outdated tests,
+  tests to remove, or audit the test suite against source code and documentation.
+  DO NOT TRIGGER for running tests, writing new tests, or fixing failing tests.
 allowed-tools: Read, Glob, Grep, Bash(read-only), Agent
+disable-model-invocation: true
 ---
 
 # Test Suite Audit Skill
 
-You are a test auditor for **maconfai**. Your job is to compare the current test suite against the project documentation (CLAUDE.md, docs/agents-config/) and source code (src/) to identify missing, outdated, or unnecessary tests.
+You are a test auditor for **maconfai**. Compare the current test suite against the project documentation (CLAUDE.md, docs/agents-config/) and source code (src/) to identify missing, outdated, or unnecessary tests.
 
 ## Project Context
 
 maconfai is a CLI tool that installs agent configurations (skills, MCP servers, hooks) from GitHub repos or local directories to multiple AI coding agents.
 
-### Agents implemented (from `src/agents.ts`)
+### Agents Implemented (from `src/agents.ts`)
 
 | Agent       | Skills | MCP                        | Hooks                                |
 | :---------- | :----- | :------------------------- | :----------------------------------- |
@@ -21,7 +26,7 @@ maconfai is a CLI tool that installs agent configurations (skills, MCP servers, 
 | codex       | Yes    | No                         | No                                   |
 | open-code   | Yes    | Yes (opencode.json format) | No                                   |
 
-### Source modules and their exports
+### Source Modules and Their Exports
 
 | Module                 | Key exports                                                                                                                                       |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -37,31 +42,7 @@ maconfai is a CLI tool that installs agent configurations (skills, MCP servers, 
 | `src/agents.ts`        | `detectInstalledAgents()`, `agents` record                                                                                                        |
 | `src/cli.ts`           | Entry point (routes: install, check, update)                                                                                                      |
 
-### Test tree structure (expected from CLAUDE.md)
-
-```
-tests/
-  test-utils.ts
-  install.test.ts
-  installer.test.ts
-  mcp.test.ts
-  source-parser.test.ts
-  sanity.test.ts
-  install-choices.test.ts
-  install/                          # High-level install flow tests
-  lock/                             # Lock file tests (read, write, add, remove, fetch-hash, token)
-  check/                            # Update check tests
-  claude-code/
-    mcp/                            # 10+ tests
-    hooks/                          # 8 tests
-  cursor/
-    mcp/                            # 11 tests
-    hooks/                          # 7 tests
-  open-code/
-    mcp/                            # 6 tests
-```
-
-### Test conventions (from CLAUDE.md)
+### Test Conventions (from CLAUDE.md)
 
 - 1 test per file, 30-100 lines
 - Use `describeConfai` wrapper from `tests/test-utils.ts`
@@ -71,7 +52,7 @@ tests/
 - Each test gets isolated temp directory
 - Given-When-Then pattern
 
-### Test helpers available
+### Test Helpers Available
 
 From `describeConfai`:
 
@@ -89,13 +70,13 @@ Fixtures: `skillFile()`, `mcpGithub`, `mcpGithubWithEnv`, `mcpLinear`, `mcpLinea
 
 ## Audit Procedure
 
-### Step 1 — Inventory current tests
+### Step 1 — Inventory Current Tests
 
 1. `Glob` for all `tests/**/*.test.ts` files
 2. Group by directory: `install/`, `lock/`, `check/`, `claude-code/`, `cursor/`, `open-code/`, root
 3. Count files per group
 
-### Step 2 — Read the source code
+### Step 2 — Read the Source Code
 
 For each module in `src/`, read:
 
@@ -103,7 +84,7 @@ For each module in `src/`, read:
 - Code paths (if/else branches, agent-specific logic)
 - Features that should have test coverage
 
-### Step 3 — Read the documentation
+### Step 3 — Read the Documentation
 
 For each doc in `docs/agents-config/`, extract:
 
@@ -111,11 +92,11 @@ For each doc in `docs/agents-config/`, extract:
 - Configuration formats, field names, edge cases
 - Agent-specific behaviors
 
-### Step 4 — Cross-reference and find gaps
+### Step 4 — Cross-reference and Find Gaps
 
 Compare tests against source + docs to identify:
 
-#### A. Missing tests
+#### A. Missing Tests
 
 1. **Missing agent coverage** — a feature is implemented for an agent but has no per-agent tests
    - Example: if open-code gains hook support, it needs `tests/open-code/hooks/` tests
@@ -127,20 +108,20 @@ Compare tests against source + docs to identify:
 4. **Missing combination tests** — features that interact but are not tested together
    - Example: skills + MCPs + hooks installed simultaneously for a specific agent
 
-#### B. Outdated tests
+#### B. Outdated Tests
 
 1. **Wrong snapshot values** — test expects output that no longer matches the current implementation
 2. **Renamed helpers** — test uses helpers that have been renamed or removed from test-utils
 3. **Changed agent config** — an agent's config paths changed in `src/agents.ts` but tests still use old paths
 4. **Deprecated features** — test covers a feature that was removed from the source
 
-#### C. Tests to remove
+#### C. Tests to Remove
 
 1. **Dead tests** — test file exists but the feature it covers was removed
 2. **Duplicate coverage** — two tests assert the same thing
 3. **Tests for non-existent agents** — test directory for an agent not in `src/agents.ts`
 
-#### D. Tests violating conventions
+#### D. Tests Violating Conventions
 
 1. **Too long** (> 100 lines) or **too short** (< 10 lines)
 2. **Multiple `it()` blocks** in a single file (should be 1 test per file)
@@ -148,7 +129,7 @@ Compare tests against source + docs to identify:
 4. **Manual assertions** instead of inline snapshots where snapshots would be clearer
 5. **Missing from CLAUDE.md test tree** — test exists but is not listed in the documented tree
 
-### Step 5 — Check CLAUDE.md accuracy
+### Step 5 — Check CLAUDE.md Accuracy
 
 Verify that the test tree documented in CLAUDE.md matches reality:
 
