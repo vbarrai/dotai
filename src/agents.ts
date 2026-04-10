@@ -33,6 +33,9 @@ export const agents: Record<AgentType, AgentConfig> = {
     displayName: 'Codex',
     skillsDir: '.codex/skills',
     globalSkillsDir: join(codexHome, 'skills'),
+    mcpConfigPath: '.codex/config.toml',
+    mcpEnvSyntax: 'bare',
+    mcpConfigFormat: 'codex',
   },
   'open-code': {
     name: 'open-code',

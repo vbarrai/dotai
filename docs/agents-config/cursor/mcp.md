@@ -84,7 +84,7 @@ Project-level configuration, committable to the repo:
     "remote-http": {
       "url": "https://my-server.com/mcp",
       "headers": {
-        "Authorization": "Bearer my-token"
+        "Authorization": "Bearer ${env:MY_API_TOKEN}"
       }
     }
   }
@@ -93,7 +93,7 @@ Project-level configuration, committable to the repo:
 
 ### Environment variables
 
-The `env` field allows passing API keys. You can also reference system variables:
+The `env` field allows passing API keys. Use `${env:VAR}` syntax to reference system variables instead of hardcoding secrets:
 
 ```json
 {
@@ -109,6 +109,19 @@ The `env` field allows passing API keys. You can also reference system variables
 }
 ```
 
+Supported syntax:
+
+- `${env:VAR}` — variable value
+- `${env:VAR:-default}` — default value if undefined
+
+> **Note**: Cursor uses `${env:VAR}` syntax, unlike Claude Code which uses `${VAR}`. maconfai handles this translation automatically when installing MCP servers.
+
+Define the actual values in your shell profile (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+export GITHUB_TOKEN="ghp_..."
+```
+
 ## Common MCP servers
 
 ### GitHub
@@ -119,7 +132,7 @@ The `env` field allows passing API keys. You can also reference system variables
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-github"],
     "env": {
-      "GITHUB_TOKEN": "ghp_..."
+      "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
     }
   }
 }
@@ -155,7 +168,7 @@ The `env` field allows passing API keys. You can also reference system variables
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-brave-search"],
     "env": {
-      "BRAVE_API_KEY": "your_key"
+      "BRAVE_API_KEY": "${env:BRAVE_API_KEY}"
     }
   }
 }

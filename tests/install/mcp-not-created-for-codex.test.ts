@@ -2,9 +2,9 @@ import { it, expect } from 'vitest'
 import { describeConfai } from '../test-utils.ts'
 
 describeConfai(
-  'install / MCP not created for codex',
-  ({ givenSource, whenInstall, targetHasFiles, targetHasNoFiles }) => {
-    it('should install skill but skip MCP config for codex', async () => {
+  'install / MCP created for codex in TOML format',
+  ({ givenSource, whenInstall, targetHasFiles, targetFile }) => {
+    it('should install skill and MCP config for codex in .codex/config.toml', async () => {
       await givenSource({
         skills: [{ name: 'with-mcp' }],
         mcpDirs: {
@@ -14,8 +14,18 @@ describeConfai(
 
       await whenInstall({ skills: ['with-mcp'], mcps: ['github'], agents: ['codex'] })
 
-      await targetHasFiles('.agents/skills/with-mcp/SKILL.md', '.codex/skills/with-mcp')
-      await targetHasNoFiles('.mcp.json')
+      await targetHasFiles(
+        '.agents/skills/with-mcp/SKILL.md',
+        '.codex/skills/with-mcp',
+        '.codex/config.toml',
+      )
+
+      expect(await targetFile('.codex/config.toml')).toMatchInlineSnapshot(`
+      "[mcp_servers.github]
+      command = "npx"
+      args = ["-y", "@mcp/github"]
+      "
+    `)
     })
   },
 )

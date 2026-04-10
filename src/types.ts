@@ -33,7 +33,7 @@ export interface AgentConfig {
   globalSkillsDir: string
   mcpConfigPath?: string
   mcpEnvSyntax?: McpEnvSyntax
-  mcpConfigFormat?: 'standard' | 'opencode'
+  mcpConfigFormat?: 'standard' | 'opencode' | 'codex'
   hooksConfigPath?: string
   hooksConfigFormat?: 'settings' | 'dedicated'
 }

@@ -48,7 +48,7 @@ For global MCP servers available across all projects:
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_TOKEN": "ghp_..."
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     }
   }
@@ -138,6 +138,12 @@ Use the `${VAR}` syntax to avoid hardcoding secrets:
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
+    },
+    "remote-api": {
+      "url": "https://my-server.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MY_API_TOKEN}"
+      }
     }
   }
 }
@@ -149,6 +155,35 @@ Supported syntax:
 - `${VAR:-default}` — default value if undefined
 
 Expansion works in: `command`, `args`, `env`, `url`, `headers`.
+
+### Where to define the variables
+
+Variables are resolved at runtime. Define them in one of these locations:
+
+| Method               | Location                                        | Scope                    |
+| :------------------- | :---------------------------------------------- | :----------------------- |
+| Shell profile        | `~/.zshrc` or `~/.bashrc`                       | All terminal sessions    |
+| Claude Code settings | `~/.claude/settings.json` → `"environment"` key | All Claude Code sessions |
+
+**Shell profile** (recommended for personal machines):
+
+```bash
+export GITHUB_TOKEN="ghp_..."
+export MY_API_TOKEN="sk-..."
+```
+
+**Claude Code settings** (`~/.claude/settings.json`):
+
+```json
+{
+  "environment": {
+    "GITHUB_TOKEN": "ghp_...",
+    "MY_API_TOKEN": "sk-..."
+  }
+}
+```
+
+> **Note**: Claude Code's `settings.json` is a local file not committed to any repo. It is a good place to store secrets that should not leak into shell history or dotfiles.
 
 ## Common MCP Servers
 
@@ -188,7 +223,7 @@ GitHub integration (issues, PRs, repos):
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-github"],
     "env": {
-      "GITHUB_TOKEN": "ghp_your_token"
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}"
     }
   }
 }
@@ -217,7 +252,7 @@ Web search:
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-brave-search"],
     "env": {
-      "BRAVE_API_KEY": "your_key"
+      "BRAVE_API_KEY": "${BRAVE_API_KEY}"
     }
   }
 }
@@ -230,7 +265,7 @@ Web search:
   "remote-server": {
     "url": "https://my-server.com/mcp",
     "headers": {
-      "Authorization": "Bearer my-token"
+      "Authorization": "Bearer ${MY_API_TOKEN}"
     }
   }
 }

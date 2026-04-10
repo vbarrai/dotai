@@ -2,5 +2,7 @@
 .claude/
 .cursor/
 .codex/
+.opencode/
 .mcp.json
+opencode.json
 ai-lock.json

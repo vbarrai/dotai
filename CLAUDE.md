@@ -53,7 +53,7 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 ## Key concepts
 
 - **Agents**: `claude-code`, `cursor`, `codex`, `gemini-cli`, `amp-code`, `open-code` (type `AgentType`)
-- **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory
+- **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory. Fallback: if no `skills/` directory exists, a root `SKILL.md` is used (single-skill repos)
 - **Canonical dir**: `.agents/skills/<name>/` — single source of truth for skill files
 - **Agent dirs**: `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.gemini/skills/`, `.amp/skills/` — symlinked to canonical dir
 - **MCP servers**: Defined in `mcps/<name>/mcp.json` directories or root `mcp.json`, merged into agent config files (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `opencode.json` for Open Code)
@@ -82,7 +82,107 @@ tests/
   installer.test.ts                      # Unit tests for low-level installer
   mcp.test.ts                            # Unit tests for MCP module
   source-parser.test.ts                  # Unit tests for source parser
+  install-choices.test.ts                # Interactive prompt choices test
   sanity.test.ts                         # Sanity checks
+  install/
+    single-skill-single-agent.test.ts    # One skill → one agent
+    single-skill-all-agents.test.ts      # One skill → all agents
+    multiple-skills-single-agent.test.ts # Many skills → one agent
+    multiple-skills-multiple-agents.test.ts # Many skills → many agents
+    filter-skills.test.ts                # --skills flag filtering
+    filter-agents.test.ts                # --agents flag filtering
+    filter-mcps.test.ts                  # --mcps flag filtering
+    filter-hooks.test.ts                 # --hooks flag filtering
+    skill-with-mcp.test.ts              # Skill + MCP bundled
+    skill-with-hooks.test.ts             # Skill + hooks bundled
+    standalone-mcp.test.ts               # MCP-only install (no skills)
+    standalone-hooks.test.ts             # Hooks-only install (no skills)
+    combined-skills-mcps-hooks.test.ts   # All three combined
+    reinstall-same-skills.test.ts        # Reinstall idempotent
+    reinstall-mcps-preserved.test.ts     # MCPs preserved on reinstall
+    reinstall-hooks-preserved.test.ts    # Hooks preserved on reinstall
+    reinstall-idempotent-combined.test.ts # Full reinstall idempotent
+    switch-agent.test.ts                 # Change agent on reinstall
+    add-agent.test.ts                    # Add agent to existing install
+    uninstall-deselected-skill.test.ts   # Removed skill cleaned up
+    uninstall-all-skills.test.ts         # Remove all skills
+    cross-agent-uninstall.test.ts        # Uninstall across agents
+    multi-agent-mcps.test.ts             # MCPs to multiple agents
+    multi-agent-hooks.test.ts            # Hooks to multiple agents
+    sequential-different-providers.test.ts # Two providers sequentially
+    sequential-hooks-merge.test.ts       # Sequential hook installs merge
+    hooks-only-then-add-skills.test.ts   # Hooks first, skills later
+    mcps-only-then-add-skills.test.ts    # MCPs first, skills later
+    lock-tracks-skills.test.ts           # ai-lock.json tracks skills
+    lock-tracks-mcps.test.ts             # ai-lock.json tracks MCPs
+    lock-tracks-hooks.test.ts            # ai-lock.json tracks hooks
+    lock-tracks-all-three.test.ts        # ai-lock.json tracks all
+    lock-removes-deselected-skill.test.ts # Lock cleaned on deselect
+    lock-hash-empty-for-local.test.ts    # No hash for local sources
+    mcp-not-created-for-codex.test.ts    # Codex skips MCP config
+    no-filter-selects-all.test.ts        # No filter = select everything
+    nothing-to-do.test.ts               # Nothing to install
+    yes-flag-all-agents.test.ts          # -y flag with all agents
+  lock/
+    lock-test-utils.ts                   # Lightweight lock test helpers
+    read/
+      valid-file.test.ts                 # Parses valid ai-lock.json
+      missing-file.test.ts              # Returns empty lock if missing
+      corrupted-json.test.ts             # Handles corrupt JSON
+      missing-version.test.ts            # Handles missing version
+      missing-skills.test.ts             # Handles missing skills key
+    write/
+      empty-lock.test.ts                 # Writes empty lock
+      with-skills.test.ts               # Writes lock with skills
+      overwrite.test.ts                  # Overwrites existing lock
+    add/
+      new-entry.test.ts                  # Adds new skill entry
+      persists-to-disk.test.ts           # Verifies file write
+      preserves-installed-at.test.ts     # Keeps original installedAt
+      optional-fields.test.ts            # Optional fields handled
+      multiple-skills.test.ts            # Multiple skills in lock
+    remove/
+      existing-skill.test.ts             # Removes existing entry
+      keeps-others.test.ts               # Other entries preserved
+      non-existent.test.ts              # No-op for missing entry
+      persists-to-disk.test.ts           # Verifies file write
+    fetch-hash/
+      matching-folder.test.ts            # Returns tree hash
+      auth-header-with-token.test.ts     # Auth header sent
+      auth-header-without-token.test.ts  # No auth when no token
+      specified-ref-only.test.ts         # Uses specified ref
+      fallback-main-master.test.ts       # Falls back main → master
+      root-sha-empty-path.test.ts        # Root SHA for empty path
+      strips-skill-md.test.ts            # Strips SKILL.md from path
+      backslash-normalization.test.ts    # Normalizes backslashes
+      folder-not-found.test.ts           # Returns null if not found
+      tree-not-blob.test.ts              # Skips blob entries
+      network-error.test.ts              # Handles network errors
+    token/
+      from-github-env.test.ts            # GITHUB_TOKEN env var
+      prefers-github-over-gh.test.ts     # GITHUB_TOKEN > GH_TOKEN
+      fallback-gh-env.test.ts            # Falls back to GH_TOKEN
+      fallback-cli.test.ts              # Falls back to gh auth token
+      empty-cli-output.test.ts           # Handles empty CLI output
+      whitespace-cli-output.test.ts      # Trims CLI output
+      all-fail.test.ts                   # Returns null if all fail
+  check/
+    all-up-to-date.test.ts               # No updates available
+    updates-available.test.ts            # Updates detected
+    hash-triggers-update.test.ts         # Hash change triggers update
+    mixed-results.test.ts                # Some up-to-date, some not
+    fetch-errors.test.ts                 # Handles fetch errors
+    skip-no-hash.test.ts                 # Skips entries without hash
+    no-skills.test.ts                    # No skills to check
+    cancel-update.test.ts                # User cancels update
+    decline-update.test.ts               # User declines update
+    multiple-updates.test.ts             # Multiple skills need update
+    update-subprocess-fail.test.ts       # Update subprocess fails
+    url-with-branch.test.ts              # URL with branch ref
+    url-skill-path.test.ts              # URL with skill path
+    url-strip-git.test.ts               # Strips .git from URL
+    url-strip-trailing-slash.test.ts     # Strips trailing slash
+    url-default-branch.test.ts           # Default branch detection
   claude-code/
     mcp/
       install-single.test.ts             # Single MCP server
@@ -94,6 +194,7 @@ tests/
       install-from-dir.test.ts           # MCP from mcps/<name>/mcp.json
       install-merge.test.ts              # Sequential installs merge MCPs
       install-skip-existing.test.ts      # Existing MCP name preserved
+      install-none.test.ts               # Empty MCP list installs nothing
     hooks/
       install-single.test.ts             # Single hook group
       install-multiple.test.ts           # Multiple hook groups
@@ -115,6 +216,7 @@ tests/
       install-from-dir.test.ts           # MCP from mcps/<name>/mcp.json
       install-merge.test.ts              # Sequential installs merge MCPs
       install-skip-existing.test.ts      # Existing MCP name preserved
+      install-none.test.ts               # Empty MCP list installs nothing
     hooks/
       install-single.test.ts             # Single hook group
       install-multiple.test.ts           # Multiple hook groups
@@ -123,14 +225,31 @@ tests/
       install-dir-with-files.test.ts     # Hook dir with companion scripts
       install-merge.test.ts              # Sequential installs merge hooks
       install-skip-duplicate.test.ts     # Duplicate handlers not added twice
+  codex/
+    skills/
+      install-single.test.ts             # Single skill to codex agent
+    mcp/
+      install-single.test.ts             # Single MCP in .codex/config.toml
+      install-multiple.test.ts           # Multiple MCPs in config.toml
+      install-env.test.ts                # ${VAR} kept bare in config.toml
+      install-url.test.ts                # URL-based MCP in config.toml
+      install-headers.test.ts            # Headers → http_headers/env_http_headers
+      install-from-dir.test.ts           # MCP from mcps/<name>/mcp.json
+      install-merge.test.ts              # Sequential installs merge in TOML
+      install-skip-existing.test.ts      # Existing MCP name preserved
+      install-none.test.ts               # Empty MCP list installs nothing
   open-code/
     mcp/
       install-single.test.ts             # Single MCP with opencode.json format
+      install-multiple.test.ts           # Multiple MCPs in opencode.json
       install-env.test.ts                # ${VAR} kept bare in opencode.json
       install-url.test.ts                # URL-based MCP (remote type)
+      install-headers.test.ts            # URL + headers, env vars kept bare
       install-with-skill.test.ts         # MCP alongside a skill
+      install-from-dir.test.ts           # MCP from mcps/<name>/mcp.json
       install-merge.test.ts              # Sequential installs merge MCPs
       install-skip-existing.test.ts      # Existing MCP name preserved
+      install-none.test.ts               # Empty MCP list installs nothing
 ```
 
 ### Test anatomy
@@ -175,7 +294,7 @@ Files follow the pattern `docs/agents-config/[agent-name]/[feature-name].md`. Ea
 | :-------------- | :------------ | :------------ | :------------ | :------------ | :-------------- |
 | **Claude Code** | Supported     | Supported     | Not supported | Not supported | `sub-agents.md` |
 | **Cursor**      | Supported     | Supported     | Not supported | Not supported | `rules.md`      |
-| **Codex**       | Supported     | Not supported | Not supported | Not supported | —               |
+| **Codex**       | Supported     | Not supported | Supported     | Not supported | —               |
 | **Gemini CLI**  | Not supported | —             | Not supported | Not supported | —               |
 | **Amp Code**    | Not supported | —             | Not supported | Not supported | —               |
 | **Open Code**   | Supported     | Not supported | Supported     | Not supported | —               |

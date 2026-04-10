@@ -17,7 +17,7 @@ MCP servers are configured in `opencode.json` under the `mcp` key:
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
       "environment": {
-        "GITHUB_TOKEN": "ghp_..."
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     }
   }
@@ -33,7 +33,7 @@ MCP servers are configured in `opencode.json` under the `mcp` key:
       "type": "remote",
       "url": "https://my-server.com/mcp",
       "headers": {
-        "Authorization": "Bearer token"
+        "Authorization": "Bearer ${MY_API_TOKEN}"
       }
     }
   }

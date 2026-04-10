@@ -62,18 +62,18 @@ npx maconfai install
 
 ## How it works
 
-1. **Discover** — maconfai looks for `SKILL.md` files inside a `skills/` directory in the source.
+1. **Discover** — maconfai looks for `SKILL.md` files inside a `skills/` directory in the source. If no `skills/` directory exists, a root `SKILL.md` is used (single-skill repos).
 2. **Select** — Pick which skills and agents to install to (auto-detects installed agents). Already installed skills are pre-checked; uncheck to remove.
 3. **Install** — Skills are copied to a canonical `.agents/skills/` directory with symlinks to each agent's skills directory.
 
 ## Supported agents
 
-| Agent       | Skills | MCP servers | Hooks | Skills dir          | MCP config         |
-| :---------- | :----: | :---------: | :---: | :------------------ | :----------------- |
-| Claude Code |   ✅   |     ✅      |  ✅   | `.claude/skills/`   | `.mcp.json`        |
-| Cursor      |   ✅   |     ✅      |  ✅   | `.cursor/skills/`   | `.cursor/mcp.json` |
-| Codex       |   ✅   |      —      |   —   | `.codex/skills/`    | —                  |
-| Open Code   |   ✅   |     ✅      |   —   | `.opencode/skills/` | `opencode.json`    |
+| Agent       | Skills | MCP servers | Hooks | Skills dir          | MCP config           |
+| :---------- | :----: | :---------: | :---: | :------------------ | :------------------- |
+| Claude Code |   ✅   |     ✅      |  ✅   | `.claude/skills/`   | `.mcp.json`          |
+| Cursor      |   ✅   |     ✅      |  ✅   | `.cursor/skills/`   | `.cursor/mcp.json`   |
+| Codex       |   ✅   |     ✅      |   —   | `.codex/skills/`    | `.codex/config.toml` |
+| Open Code   |   ✅   |     ✅      |   —   | `.opencode/skills/` | `opencode.json`      |
 
 Canonical location: `.agents/skills/` (agent dirs are symlinked to this).
 
