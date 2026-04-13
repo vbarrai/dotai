@@ -45,6 +45,21 @@ maconfai install
 maconfai check
 ```
 
+### Example
+
+Install skills, MCP servers, and hooks from [`vbarrai/config-provider-official`](https://github.com/vbarrai/config-provider-official):
+
+```bash
+# Install everything interactively
+npx maconfai install vbarrai/config-provider-official
+
+# Skip prompts and install for Claude Code only
+npx maconfai install vbarrai/config-provider-official -y --agents=claude-code
+
+# Cherry-pick specific skills
+npx maconfai install vbarrai/config-provider-official --skills=pre-commit-checks,simplify
+```
+
 ### With npx
 
 You can run maconfai without installing it globally using `npx`:
