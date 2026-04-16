@@ -77,7 +77,10 @@ npx maconfai install
 
 ## How it works
 
-1. **Discover** — maconfai looks for `SKILL.md` files inside a `skills/` directory in the source. If no `skills/` directory exists, a root `SKILL.md` is used (single-skill repos).
+1. **Discover** — maconfai finds skills using a waterfall strategy (first match wins):
+   - `skills/<name>/SKILL.md` — multi-skill repo with a `skills/` wrapper directory
+   - `<name>/SKILL.md` — multi-skill repo with skills directly at root level
+   - `SKILL.md` at root — single-skill repo
 2. **Select** — Pick which skills and agents to install to (auto-detects installed agents). Already installed skills are pre-checked; uncheck to remove.
 3. **Install** — Skills are copied to a canonical `.agents/skills/` directory with symlinks to each agent's skills directory.
 

@@ -53,7 +53,10 @@ CLI tool to install, update, and uninstall any type of agent configuration from 
 ## Key concepts
 
 - **Agents**: `claude-code`, `cursor`, `codex`, `gemini-cli`, `amp-code`, `open-code` (type `AgentType`)
-- **Skills**: Identified by a `SKILL.md` file inside a `skills/` directory. Fallback: if no `skills/` directory exists, a root `SKILL.md` is used (single-skill repos)
+- **Skills**: Discovered via a waterfall strategy (first match wins):
+  1. `skills/<name>/SKILL.md` — multi-skill repo with a `skills/` wrapper directory
+  2. `<name>/SKILL.md` — multi-skill repo with skills directly at root level (skips `.`-prefixed dirs, `mcps`, `hooks`, `skills`)
+  3. `SKILL.md` at root — single-skill repo
 - **Canonical dir**: `.agents/skills/<name>/` — single source of truth for skill files
 - **Agent dirs**: `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.gemini/skills/`, `.amp/skills/` — symlinked to canonical dir
 - **MCP servers**: Defined in `mcps/<name>/mcp.json` directories or root `mcp.json`, merged into agent config files (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `opencode.json` for Open Code)
@@ -85,6 +88,9 @@ tests/
   install-choices.test.ts                # Interactive prompt choices test
   sanity.test.ts                         # Sanity checks
   install/
+    discover-skills-dir.test.ts           # Discovery: skills/<name>/SKILL.md layout
+    discover-root-dirs.test.ts            # Discovery: <name>/SKILL.md layout
+    discover-root-single.test.ts          # Discovery: root SKILL.md layout
     single-skill-single-agent.test.ts    # One skill → one agent
     single-skill-all-agents.test.ts      # One skill → all agents
     multiple-skills-single-agent.test.ts # Many skills → one agent

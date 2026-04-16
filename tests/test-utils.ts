@@ -84,6 +84,8 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
+export type SkillLayout = 'skills-dir' | 'root-dirs' | 'root-single'
+
 export interface SkillFixture {
   name: string
 }
@@ -115,6 +117,7 @@ export function setupScenario() {
 
   async function givenSource(opts: {
     skills?: SkillFixture[]
+    skillLayout?: SkillLayout
     mcps?: Record<string, McpServerConfig>
     mcpDirs?: Record<string, McpServerConfig>
     hooks?: Record<string, HookGroup>
@@ -122,9 +125,16 @@ export function setupScenario() {
     hookDirFiles?: Record<string, Record<string, string>>
   }) {
     const files: FileTree = {}
+    const layout = opts.skillLayout ?? 'skills-dir'
 
     for (const skill of opts.skills ?? []) {
-      files[`./skills/${skill.name}/SKILL.md`] = skillFile(skill.name)
+      const path =
+        layout === 'skills-dir'
+          ? `./skills/${skill.name}/SKILL.md`
+          : layout === 'root-dirs'
+            ? `./${skill.name}/SKILL.md`
+            : `./SKILL.md`
+      files[path] = skillFile(skill.name)
     }
 
     if (opts.mcps) {

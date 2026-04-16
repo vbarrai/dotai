@@ -1,6 +1,7 @@
 import * as p from '@clack/prompts'
 import pc from 'picocolors'
 import { existsSync } from 'fs'
+import { join } from 'path'
 import { parseSource } from './source-parser.ts'
 import { cloneRepo, cleanupTempDir, getTreeHash } from './git.ts'
 import {
@@ -90,11 +91,11 @@ export async function runInstall(args: string[]): Promise<void> {
         p.log.error(pc.red(`Path not found: ${parsed.localPath}`))
         process.exit(1)
       }
-      skillsDir = parsed.localPath!
+      skillsDir = parsed.subpath ? join(parsed.localPath!, parsed.subpath) : parsed.localPath!
     } else {
       spinner.start('Cloning repository...')
       tempDir = await cloneRepo(parsed.url, parsed.ref)
-      skillsDir = tempDir
+      skillsDir = parsed.subpath ? join(tempDir, parsed.subpath) : tempDir
       spinner.stop('Repository cloned')
     }
 
