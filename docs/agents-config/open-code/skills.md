@@ -25,9 +25,7 @@ Open Code supports the open Agent Skills standard with progressive disclosure:
 | User (compat)      | `~/.claude/skills/<name>/SKILL.md`          | Claude Code   |
 | User (standard)    | `~/.agents/skills/<name>/SKILL.md`          | Standard      |
 
-**Priority**: Project > User > Built-in.
-
-Open Code walks up from the current working directory until it reaches the git worktree, loading matching skills along the way.
+Open Code walks up from the current working directory to the git worktree root, loading matching skills found along the way. All three project variants (`.opencode/skills/`, `.claude/skills/`, `.agents/skills/`) and all three user variants are scanned simultaneously — they are not separate tiers with strict precedence.
 
 ## SKILL.md Format
 
@@ -41,18 +39,38 @@ Instructions for the agent...
 
 **Frontmatter fields:**
 
-| Field           | Required | Description                                  |
-| :-------------- | :------- | :------------------------------------------- |
-| `name`          | Yes      | Skill identifier (must match directory name) |
-| `description`   | Yes      | 1-1024 characters, triggers discovery        |
-| `license`       | No       | License identifier                           |
-| `allowed-tools` | No       | List of allowed tools                        |
-| `compatibility` | No       | Agent compatibility list                     |
-| `metadata`      | No       | Additional metadata (version, internal)      |
+| Field           | Required | Description                                                               |
+| :-------------- | :------- | :------------------------------------------------------------------------ |
+| `name`          | Yes      | Skill identifier (must match directory name)                              |
+| `description`   | Yes      | 1-1024 characters, triggers discovery                                     |
+| `license`       | No       | License identifier                                                        |
+| `allowed-tools` | No       | List of allowed tools                                                     |
+| `compatibility` | No       | Agent compatibility list                                                  |
+| `metadata`      | No       | Additional metadata — recognized sub-fields include `audience`, `version` |
+
+> Unknown frontmatter fields are ignored, so skills can carry agent-specific metadata without breaking discovery.
 
 ## Invocation Control
 
 Open Code discovers skills on-demand via the native skill tool — agents see available skills and load full content when needed. The model decides when to invoke a skill based on the `name` and `description` fields.
+
+## Permissions
+
+Skill invocations can be gated in `opencode.json` with glob-style patterns:
+
+```json
+{
+  "permissions": {
+    "skills": {
+      "*": "allow",
+      "internal-*": "deny",
+      "experimental-*": "ask"
+    }
+  }
+}
+```
+
+Values: `allow`, `deny`, `ask`. Patterns are matched against the skill name; later, more specific patterns take precedence over broader ones.
 
 ## MCP in Skills
 

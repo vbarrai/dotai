@@ -16,19 +16,27 @@ Hooks are shell commands, HTTP endpoints, or LLM prompts defined by the user tha
 | `UserPromptSubmit`   | When a prompt is submitted, before processing by Claude | Yes        |
 | `PreToolUse`         | Before a tool executes. Can block it                    | Yes        |
 | `PermissionRequest`  | When a permission dialog appears                        | Yes        |
+| `PermissionDenied`   | When a permission is denied (supports `retry: true`)    | No         |
 | `PostToolUse`        | After a tool has succeeded                              | No         |
 | `PostToolUseFailure` | After a tool has failed                                 | No         |
 | `Notification`       | When Claude Code sends a notification                   | No         |
+| `Elicitation`        | When a tool requests user input (MCP elicitation)       | Yes        |
+| `ElicitationResult`  | After an elicitation dialog resolves                    | No         |
 | `SubagentStart`      | When a sub-agent is launched                            | No         |
 | `SubagentStop`       | When a sub-agent finishes                               | Yes        |
 | `Stop`               | When Claude finishes responding                         | Yes        |
+| `StopFailure`        | When the main loop stops due to an error                | No         |
+| `TaskCreated`        | When a task is created                                  | Yes        |
 | `TeammateIdle`       | When a team teammate is about to go idle                | Yes        |
 | `TaskCompleted`      | When a task is marked as completed                      | Yes        |
 | `InstructionsLoaded` | When a CLAUDE.md or `.claude/rules/*.md` is loaded      | No         |
 | `ConfigChange`       | When a configuration file changes during a session      | Yes        |
+| `CwdChanged`         | When the current working directory changes              | No         |
+| `FileChanged`        | When a tracked file changes externally                  | No         |
 | `WorktreeCreate`     | When a worktree is created via `--worktree`             | Yes        |
 | `WorktreeRemove`     | When a worktree is removed                              | No         |
 | `PreCompact`         | Before context compaction                               | No         |
+| `PostCompact`        | After context compaction                                | No         |
 | `SessionEnd`         | When a session ends                                     | No         |
 
 ## Configuration
@@ -76,14 +84,17 @@ Hooks are defined in JSON settings files. The configuration has three levels:
 
 Executes a shell command. JSON input arrives on stdin.
 
-| Field           | Required | Description                                         |
-| :-------------- | :------- | :-------------------------------------------------- |
-| `type`          | Yes      | `"command"`                                         |
-| `command`       | Yes      | Shell command to execute                            |
-| `timeout`       | No       | Seconds before cancellation (default: 600)          |
-| `async`         | No       | If `true`, runs in the background without blocking  |
-| `statusMessage` | No       | Message displayed during execution                  |
-| `once`          | No       | If `true`, runs only once per session (Skills only) |
+| Field           | Required | Description                                                               |
+| :-------------- | :------- | :------------------------------------------------------------------------ |
+| `type`          | Yes      | `"command"`                                                               |
+| `command`       | Yes      | Shell command to execute                                                  |
+| `timeout`       | No       | Seconds before cancellation (default: 600)                                |
+| `async`         | No       | If `true`, runs in the background without blocking                        |
+| `asyncRewake`   | No       | If `true` (async only), re-wakes Claude when the hook completes           |
+| `shell`         | No       | Shell to execute in: `bash` (default) or `powershell`                     |
+| `statusMessage` | No       | Message displayed during execution                                        |
+| `once`          | No       | If `true`, runs only once per session                                     |
+| `if`            | No       | Permission-rule filter — runs only when the active permission rules match |
 
 ### HTTP (`type: "http"`)
 
@@ -123,15 +134,20 @@ Launches a sub-agent with tool access (Read, Grep, Glob) to verify conditions.
 
 The `matcher` field is a regex that filters when the hook triggers. Use `"*"`, `""`, or omit `matcher` to match everything.
 
-| Event                                            | What the matcher filters | Examples                            |
-| :----------------------------------------------- | :----------------------- | :---------------------------------- |
-| `PreToolUse`, `PostToolUse`, `PermissionRequest` | Tool name                | `Bash`, `Edit\|Write`, `mcp__.*`    |
-| `SessionStart`                                   | How the session started  | `startup`, `resume`, `clear`        |
-| `SessionEnd`                                     | Why the session ended    | `clear`, `logout`, `other`          |
-| `Notification`                                   | Notification type        | `permission_prompt`, `idle_prompt`  |
-| `SubagentStart`, `SubagentStop`                  | Agent type               | `Bash`, `Explore`, `Plan`           |
-| `ConfigChange`                                   | Config source            | `user_settings`, `project_settings` |
-| `PreCompact`                                     | Trigger                  | `manual`, `auto`                    |
+| Event                                            | What the matcher filters | Examples                                                                                 |
+| :----------------------------------------------- | :----------------------- | :--------------------------------------------------------------------------------------- |
+| `PreToolUse`, `PostToolUse`, `PermissionRequest` | Tool name                | `Bash`, `Edit\|Write`, `mcp__.*`                                                         |
+| `SessionStart`                                   | How the session started  | `startup`, `resume`, `clear`, `compact`                                                  |
+| `SessionEnd`                                     | Why the session ended    | `clear`, `resume`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
+| `Notification`                                   | Notification type        | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`                 |
+| `SubagentStart`, `SubagentStop`                  | Agent type               | `Bash`, `Explore`, `Plan`                                                                |
+| `ConfigChange`                                   | Config source            | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`       |
+| `InstructionsLoaded`                             | Load trigger             | `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact`             |
+| `PreCompact`                                     | Trigger                  | `manual`, `auto`                                                                         |
+
+### Matcher Semantics
+
+A matcher containing only letters, digits, `_`, or `|` is matched as an exact string (or union of exact strings). Any other character turns the matcher into a regex.
 
 ### Matcher for MCP Tools
 
@@ -156,13 +172,13 @@ MCP tools follow the pattern `mcp__<server>__<tool>`:
 
 All hooks receive these fields as JSON (stdin for command, body for HTTP):
 
-| Field             | Description                                          |
-| :---------------- | :--------------------------------------------------- |
-| `session_id`      | Session identifier                                   |
-| `transcript_path` | Path to the conversation JSON                        |
-| `cwd`             | Current working directory                            |
-| `permission_mode` | Permission mode (`default`, `plan`, `dontAsk`, etc.) |
-| `hook_event_name` | Event name                                           |
+| Field             | Description                                                                               |
+| :---------------- | :---------------------------------------------------------------------------------------- |
+| `session_id`      | Session identifier                                                                        |
+| `transcript_path` | Path to the conversation JSON                                                             |
+| `cwd`             | Current working directory                                                                 |
+| `permission_mode` | Permission mode: `default`, `plan`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions` |
+| `hook_event_name` | Event name                                                                                |
 
 Additional fields for sub-agents:
 
@@ -204,15 +220,34 @@ On exit 0, stdout JSON can control behavior:
 }
 ```
 
-`permissionDecision` options: `"allow"`, `"deny"`, `"ask"` (escalate to the user).
+`permissionDecision` options: `"allow"`, `"deny"`, `"ask"` (escalate to the user), `"defer"` (pause tool execution — pair with the `AskUserQuestion` flow).
+
+`PreToolUse` hooks may also return `updatedInput` (mutated tool input) and `additionalContext` (extra prompt context).
+
+### Other Event Output
+
+- `PostToolUse`: `updatedMCPToolOutput` (for MCP tools), `additionalContext`.
+- `UserPromptSubmit`: `sessionTitle`, `additionalContext`.
+- `PermissionDenied`: `retry: true` to retry the tool call after the user revisits permissions.
+- `PermissionRequest`: rich `decision` object — `behavior`, `updatedInput`, `updatedPermissions` (`addRules | replaceRules | removeRules | setMode | addDirectories | removeDirectories`), `destination` (`session | localSettings | projectSettings | userSettings`).
+- `Elicitation` / `ElicitationResult`: `action` (`accept | decline | cancel`) and `content`.
+- `WorktreeCreate`: returns the worktree path (stdout or `worktreePath`).
+
+### Output Caps, Dedup, and HTTP Semantics
+
+- **Output cap**: hook stdout/stderr over 10,000 chars is truncated; the full payload is saved to a file with a preview.
+- **Deduplication**: identical handler definitions registered multiple times are executed once per event.
+- **HTTP hooks**: non-2xx responses are non-blocking. To block, return 2xx with `decision: "block"` or an appropriate `hookSpecificOutput`.
 
 ## Environment Variables
 
-| Variable                | Description                          |
-| :---------------------- | :----------------------------------- |
-| `$CLAUDE_PROJECT_DIR`   | Project root                         |
-| `${CLAUDE_PLUGIN_ROOT}` | Plugin root                          |
-| `$CLAUDE_CODE_REMOTE`   | `"true"` in a remote web environment |
+| Variable                | Description                                                                                                                           |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `$CLAUDE_PROJECT_DIR`   | Project root                                                                                                                          |
+| `${CLAUDE_PLUGIN_ROOT}` | Plugin root                                                                                                                           |
+| `${CLAUDE_PLUGIN_DATA}` | Plugin-scoped data directory                                                                                                          |
+| `$CLAUDE_CODE_REMOTE`   | `"true"` in a remote web environment                                                                                                  |
+| `$CLAUDE_ENV_FILE`      | Path to a file available in `SessionStart`, `CwdChanged`, `FileChanged` where hooks can persist env vars for subsequent Bash commands |
 
 ## Hooks in Skills and Agents
 
