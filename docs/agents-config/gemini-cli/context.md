@@ -52,9 +52,11 @@ Shared guidelines: @../shared/style-guide.md
 
 ```bash
 /memory show        # View current memory (full concatenated context)
-/memory refresh     # Force a re-scan and reload of all GEMINI.md files
+/memory reload      # Force a re-scan and reload of all GEMINI.md files
 /memory add <text>  # Add text to the global GEMINI.md (~/.gemini/GEMINI.md)
 ```
+
+The CLI footer displays how many context files are currently loaded.
 
 ## Recommended Format
 

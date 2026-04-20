@@ -73,19 +73,29 @@ Configurations merge — later configs override earlier ones only for conflictin
 
 maconfai handles format translation automatically — the source `mcp.json` uses the standard format and is converted to Open Code's format during installation.
 
+## CLI
+
+```bash
+opencode mcp add     # Interactive add (local or remote)
+opencode mcp auth    # Browser-based OAuth flow for a remote server
+opencode mcp         # List configured servers and connection status
+```
+
 ## OAuth Support
 
-Open Code supports OAuth authentication for remote MCP servers:
+For most OAuth-enabled MCP servers, **no inline configuration is needed**. Run `opencode mcp auth` to complete an interactive browser-based authorization; tokens are stored in `~/.local/share/opencode/mcp-auth.json` and refreshed automatically.
+
+To opt out (for example, API-key-only servers that would otherwise trigger OAuth), set:
 
 ```json
 {
   "mcp": {
-    "oauth-server": {
+    "api-key-server": {
       "type": "remote",
       "url": "https://my-server.com/mcp",
-      "oauth": {
-        "clientId": "...",
-        "clientSecret": "..."
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer ${MY_API_TOKEN}"
       }
     }
   }

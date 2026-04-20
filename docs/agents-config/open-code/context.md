@@ -15,25 +15,23 @@
 | Project            | `./AGENTS.md`                  | Highest priority |
 | Parent directories | Walk up to git worktree        | Merged           |
 | Global             | `~/.config/opencode/AGENTS.md` | Always included  |
-| Fallback           | `~/.claude/CLAUDE.md`          | Unless disabled  |
 
 ## Fallback File Names
 
-If no `AGENTS.md` exists, Open Code looks for:
-
-1. `CLAUDE.md` (Claude Code compatibility)
+Open Code looks for `AGENTS.md` first; if none is found in a given category, it falls back to `CLAUDE.md`. **First match per category wins** — if both `AGENTS.md` and `CLAUDE.md` exist in the same location, only `AGENTS.md` is loaded. `~/.config/opencode/AGENTS.md` takes precedence over `~/.claude/CLAUDE.md`.
 
 ## Custom Instruction Files
 
-You can specify custom instruction files in `opencode.json`:
+Specify custom instruction files in `opencode.json` as an **array of paths or glob patterns**:
 
 ```json
 {
-  "instructions": {
-    "files": ["CUSTOM_RULES.md"]
-  }
+  "instructions": ["CONTRIBUTING.md", "docs/guidelines.md", ".cursor/rules/*.md"]
 }
 ```
+
+- Glob patterns are supported.
+- Remote URLs can also be listed; they are fetched with a 5-second timeout.
 
 ## Auto-Generation
 

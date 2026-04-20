@@ -28,6 +28,14 @@ env_http_headers = { "Authorization" = "MY_AUTH_VAR" }
 command = "..."
 enabled = false                                 # Disabled without removing
 disabled_tools = ["dangerous_tool"]             # Specific tools disabled
+
+[mcp_servers.docs]
+command = "docs-server"
+supports_parallel_tool_calls = true             # Allow concurrent tool calls
+default_tools_approval_mode = "approve"         # Default approval for all tools
+
+[mcp_servers.docs.tools.search]
+approval_mode = "prompt"                        # Per-tool override
 ```
 
 ## Supported Transports
@@ -39,21 +47,32 @@ disabled_tools = ["dangerous_tool"]             # Specific tools disabled
 
 ## Per-Server Options
 
-| Option                 | Type     | Description                     |
-| :--------------------- | :------- | :------------------------------ |
-| `command`              | string   | stdio command                   |
-| `args`                 | string[] | Command arguments               |
-| `env`                  | table    | Environment variables           |
-| `cwd`                  | string   | Working directory               |
-| `url`                  | string   | SSE URL                         |
-| `http_url`             | string   | Streamable HTTP URL             |
-| `bearer_token_env_var` | string   | Env variable for Bearer token   |
-| `http_headers`         | table    | Static HTTP headers             |
-| `env_http_headers`     | table    | HTTP headers from env variables |
-| `startup_timeout_sec`  | number   | Startup timeout (default: 10s)  |
-| `tool_timeout_sec`     | number   | Per-tool timeout (default: 60s) |
-| `enabled`              | bool     | Enable/disable the server       |
-| `disabled_tools`       | string[] | List of tools to disable        |
+| Option                         | Type     | Description                                                     |
+| :----------------------------- | :------- | :-------------------------------------------------------------- |
+| `command`                      | string   | stdio command                                                   |
+| `args`                         | string[] | Command arguments                                               |
+| `env`                          | table    | Environment variables                                           |
+| `cwd`                          | string   | Working directory                                               |
+| `url`                          | string   | SSE URL                                                         |
+| `http_url`                     | string   | Streamable HTTP URL                                             |
+| `bearer_token_env_var`         | string   | Env variable for Bearer token                                   |
+| `http_headers`                 | table    | Static HTTP headers                                             |
+| `env_http_headers`             | table    | HTTP headers from env variables                                 |
+| `startup_timeout_sec`          | number   | Startup timeout (default: 10s)                                  |
+| `tool_timeout_sec`             | number   | Per-tool timeout (default: 60s)                                 |
+| `enabled`                      | bool     | Enable/disable the server                                       |
+| `disabled_tools`               | string[] | List of tools to disable                                        |
+| `supports_parallel_tool_calls` | bool     | If `true`, the server may receive multiple tool calls in flight |
+| `default_tools_approval_mode`  | string   | Default approval mode for all tools (e.g., `approve`, `prompt`) |
+
+### Per-Tool Approval Overrides
+
+Override approval mode for individual tools using a nested table:
+
+```toml
+[mcp_servers.<name>.tools.<tool_name>]
+approval_mode = "prompt"
+```
 
 ## CLI MCP
 

@@ -44,18 +44,22 @@ Instructions that Claude will follow when the Skill is invoked.
 
 ## Frontmatter Fields
 
-| Field                      | Required    | Description                                                                                                                             |
-| :------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                     | No          | Display name. Lowercase, digits, and hyphens only (max 64 chars). If omitted, uses the directory name.                                  |
-| `description`              | Recommended | What the Skill does and when to use it. Claude uses this field to decide when to load the Skill. Max 1024 chars.                        |
-| `argument-hint`            | No          | Hint displayed during auto-completion. E.g., `[issue-number]`, `[filename] [format]`.                                                   |
-| `disable-model-invocation` | No          | `true` = prevents Claude from automatically loading this Skill. For manual workflows (`/deploy`, `/commit`). Default: `false`.          |
-| `user-invocable`           | No          | `false` = hidden from the `/` menu. For background knowledge. Default: `true`.                                                          |
-| `allowed-tools`            | No          | Tools Claude can use without asking permission when the Skill is active. E.g., `Read, Grep, Glob`.                                      |
-| `model`                    | No          | Model to use when the Skill is active.                                                                                                  |
-| `context`                  | No          | `fork` = run in an isolated sub-agent.                                                                                                  |
-| `agent`                    | No          | Type of sub-agent to use with `context: fork`. Options: `Explore`, `Plan`, `general-purpose`, or a custom agent from `.claude/agents/`. |
-| `hooks`                    | No          | Hooks tied to the Skill's lifecycle.                                                                                                    |
+| Field                      | Required    | Description                                                                                                                                             |
+| :------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                     | No          | Display name. Lowercase, digits, and hyphens only (max 64 chars). If omitted, uses the directory name.                                                  |
+| `description`              | Recommended | What the Skill does and when to use it. Claude uses this field to decide when to load the Skill. Combined with `when_to_use`, truncated at 1,536 chars. |
+| `when_to_use`              | No          | Additional guidance on when Claude should invoke the Skill. Appended to `description` in the listing (counts toward the 1,536-char cap).                |
+| `argument-hint`            | No          | Hint displayed during auto-completion. E.g., `[issue-number]`, `[filename] [format]`.                                                                   |
+| `disable-model-invocation` | No          | `true` = prevents Claude from automatically loading this Skill. For manual workflows (`/deploy`, `/commit`). Default: `false`.                          |
+| `user-invocable`           | No          | `false` = hidden from the `/` menu. For background knowledge. Default: `true`.                                                                          |
+| `allowed-tools`            | No          | Tools Claude can use without asking permission when the Skill is active. Space-separated string or YAML list. E.g., `Read Grep Glob`.                   |
+| `model`                    | No          | Model to use when the Skill is active.                                                                                                                  |
+| `effort`                   | No          | Reasoning effort budget. Options: `low`, `medium`, `high`, `xhigh`, `max`.                                                                              |
+| `paths`                    | No          | Glob patterns limiting when the Skill activates (e.g., `["src/**/*.ts"]`).                                                                              |
+| `shell`                    | No          | Shell used for `` !`...` `` injection and script execution. `bash` (default) or `powershell`.                                                           |
+| `context`                  | No          | `fork` = run in an isolated sub-agent.                                                                                                                  |
+| `agent`                    | No          | Type of sub-agent to use with `context: fork`. Options: `Explore`, `Plan`, `general-purpose` (default), or a custom agent from `.claude/agents/`.       |
+| `hooks`                    | No          | Hooks tied to the Skill's lifecycle.                                                                                                                    |
 
 ## Where to Store Skills
 
@@ -129,6 +133,21 @@ agent: Explore
 Summarize this pull request...
 ```
 
+For multi-line shell output, use a fenced `!` block:
+
+````markdown
+```!
+git status
+git diff --stat
+```
+````
+
+Shell execution can be disabled globally via the `disableSkillShellExecution` setting.
+
+### `$ARGUMENTS` Quoting
+
+`$ARGUMENTS` uses shell-style quoting: wrap multi-word values in quotes to keep them together (e.g., `/fix-issue "migration step 3"`).
+
 ## Execution in a Sub-agent
 
 With `context: fork`, the Skill runs in an isolated context. The content of `SKILL.md` becomes the sub-agent's prompt (no access to conversation history).
@@ -179,6 +198,15 @@ Reference them from `SKILL.md`:
 | `/debug [description]`      | Claude Code session diagnostics                     |
 | `/loop [interval] <prompt>` | Runs a prompt at regular intervals                  |
 | `/claude-api`               | Loads the Claude API reference for your language    |
+| `/init`                     | Scaffolds a `CLAUDE.md` with codebase docs          |
+| `/review`                   | Reviews a pull request                              |
+| `/security-review`          | Runs a security review of pending changes           |
+
+`/init`, `/review`, and `/security-review` are also available via the Skill tool.
+
+## Triggering Extended Thinking
+
+Including the keyword **`ultrathink`** in a Skill's prompt enables extended reasoning for that invocation.
 
 ## Legacy Commands (`.claude/commands/`)
 
@@ -186,7 +214,30 @@ Files in `.claude/commands/` continue to work and support the same frontmatter. 
 
 ## Context Budget
 
-Skill descriptions are loaded into context. With many Skills, they can exceed the character budget (2% of the context window, fallback to 16,000 chars). Use `/context` to check. Environment variable: `SLASH_COMMAND_TOOL_CHAR_BUDGET`.
+Skill descriptions are loaded into context. With many Skills, they can exceed the character budget (1% of the context window, fallback to 8,000 chars). Use `/context` to check. Environment variable: `SLASH_COMMAND_TOOL_CHAR_BUDGET`.
+
+## Skill Content Lifecycle
+
+On auto-compaction, Claude Code retains the first 5,000 tokens of each loaded Skill, capped at a combined 25,000-token budget.
+
+## Live Change Detection
+
+Adding, editing, or removing a Skill takes effect within the current session — no restart required. Skills in directories added via `--add-dir` are also re-discovered live.
+
+## Permission Rules
+
+Skill invocations can be scoped in `settings.json` using the `Skill(...)` syntax:
+
+```json
+{
+  "permissions": {
+    "allow": ["Skill(pr-summary)"],
+    "deny": ["Skill(deploy-*)"]
+  }
+}
+```
+
+`Skill(name)` matches a specific Skill; `Skill(name *)` matches any argument variant.
 
 ## Sources
 
